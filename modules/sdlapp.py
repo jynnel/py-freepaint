@@ -1,6 +1,6 @@
 from ctypes import byref
 import sdl2
-from glrenderer import Renderer
+from modules.glrenderer import Renderer
 
 class SDLApp:
     def __init__(self, title, width, height):

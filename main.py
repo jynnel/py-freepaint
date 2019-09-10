@@ -1,8 +1,8 @@
 import sys
 import time
 
-from sdlapp import SDLApp
-from xdevices import XDevices
+from modules.sdlapp import SDLApp
+from modules.xdevices import XDevices
 
 framerate = 120.0
 framedelta = 1.0 / framerate
