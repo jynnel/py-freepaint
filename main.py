@@ -8,7 +8,7 @@ framerate = 120.0
 framedelta = 1.0 / framerate
 
 def main(argv):
-    app = SDLApp("py-freepaint", 800, 600)
+    app = SDLApp("py-freepaint", 580, 580)
     xd = XDevices()
 
     xd.add_device("stylus")

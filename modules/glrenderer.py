@@ -3,7 +3,7 @@ from ctypes import c_int
 from OpenGL import GL
 from OpenGL.GL import shaders
 
-from modules.math import mat4_ortho, mat4_mul, mat4_identity
+from modules.math import mat4_ortho, mat4_mul, mat4_identity, mat4_translate, mat4_print
 from modules.gltypes import Program, RenderTarget, DualFramebuffer
 from modules.types import RGBA
 
@@ -51,7 +51,7 @@ class Renderer:
         self.draw_prog = Program("shaders/draw.vert", "shaders/draw.frag")
         
         self.canvas_size = 512
-        self.canvas = DualFramebuffer(self.canvas_size, self.canvas_size, RGBA(0.5, 0.8, 0.8, 1.0), True)
+        self.canvas = DualFramebuffer(self.canvas_size, self.canvas_size, RGBA(0.5, 0.5, 0.5, 1.0), True)
 
         self.view = RenderTarget(
             {
@@ -63,13 +63,15 @@ class Renderer:
             }, {
                 "width": self.window_size[0],
                 "height": self.window_size[0],
-                "color": RGBA(0.5, 0.5, 0.5, 1),
+                "color": RGBA(0.2, 0.2, 0.2, 1),
                 "generate mipmaps": True
             }
         )
         self.view_transform = mat4_identity()
+        hz = self.canvas_size * 0.5
+        mat4_translate(self.view_transform, self.window_size[0] * 0.5 - hz, self.window_size[1] * 0.5 - hz, -0.5)
         self.view_transform_screen = mat4_mul(self.view_transform, self.ortho_matrix)
-        
+
         self.screen = RenderTarget(
             {
                 "vertex shader path": "shaders/screen.vert",
@@ -80,7 +82,7 @@ class Renderer:
             }, {
                 "width": self.window_size[0],
                 "height": self.window_size[1],
-                "color": RGBA(0.0, 0.5, 0.0, 1),
+                "color": RGBA(0.2, 0.2, 0.4, 1),
                 "generate mipmaps": False
             }
         )
@@ -90,6 +92,8 @@ class Renderer:
         pass
 
     def render(self):
+        GL.glViewport(0, 0, self.window_size[0], self.window_size[1])
+
         self.view.render({
             "basetexture": self.canvas.fbs[1].texture if self.canvas.toggle else self.canvas.fbs[0].texture,
             "transform": self.view_transform_screen
@@ -105,4 +109,3 @@ class Renderer:
             "showcolor": 1,
             "softness": 0.5,
         })
-

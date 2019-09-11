@@ -21,6 +21,19 @@ def mat4_mul( m1, m2 ):
                 m[i][j] += m1[i][k] * m2[k][j]
     return m
 
+def mat4_translate( m, x, y, z ):
+    m[3][0] += x
+    m[3][1] += y
+    m[3][2] += z
+
+def mat4_print( m ):
+    s = ""
+    for i in range(4):
+        for j in range(4):
+            s += "%.6f, "%m[j][i]
+        s += "\n"
+    print(s)
+
 def mat4_identity():
     return [
         [1, 0, 0, 0],

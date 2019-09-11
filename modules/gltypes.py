@@ -166,7 +166,7 @@ class Framebuffer:
     
     def use(self):
         GL.glBindFramebuffer( GL.GL_FRAMEBUFFER, self.id )
-    
+
 class RenderTarget:
     def __init__(self, prog_args, vao_args, fb_args):
         self.program = Program(prog_args["vertex shader path"], prog_args["fragment shader path"])
@@ -178,10 +178,10 @@ class RenderTarget:
         self.vao.use()
         self.fb.use()
 
+        self.program.set_uniforms(uniforms)
+
         GL.glClearColor( self.fb.color.r, self.fb.color.g, self.fb.color.b, self.fb.color.a )
         GL.glClear( GL.GL_COLOR_BUFFER_BIT )
-
-        self.program.set_uniforms(uniforms)
 
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )
 
@@ -197,8 +197,9 @@ class DualFramebuffer:
     def get_texture(self, i):
         return self.fbs[i].texture.id
     
-    def render(self, program, uniforms):
+    def render(self, vao, program, uniforms):
         program.use()
+        vao.use()
         
         fb = self.fbs[self.toggle]
         fb.use()
