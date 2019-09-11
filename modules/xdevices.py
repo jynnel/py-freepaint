@@ -24,7 +24,7 @@ class XDevices:
 
         if not dev_info:
             print(f'No device with "{namestr}" in its name was found.')
-            return
+            return False
 
         device = {
             "deviceid": dev_info["deviceid"],
@@ -39,7 +39,11 @@ class XDevices:
                     valuator_name = self.display.get_atom_name(int(c["label"]))
                     device["valuators"][valuator_name] = 0.0
 
+        print("Found %s"%device["name"])
+
         self.devices[namestr] = device
+
+        return True
 
     def update_devices(self):
         for key in self.devices:

@@ -36,8 +36,9 @@ void main() {
                           - smoothstep( dr-lr, dr, dist));
     
     float opac = min(max(opacity, 0.2), 0.6);
-    color.rgb = mix(texcolor, brushcolor.rgb, cl);
-    color.rgb = mix(color.rgb, vec3(0.0), bl*opac);
-    color.rgb = mix(color.rgb, vec3(1.0), wl*opac);
-    color.a = 1.0;
+    vec3 col = mix(texcolor, brushcolor.rgb, cl);
+    col = mix(col, vec3(0.0), bl*opac);
+    col = mix(col, vec3(1.0), wl*opac);
+
+    color = vec4(col, 1.0);
 }

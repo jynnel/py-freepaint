@@ -3,7 +3,7 @@ from ctypes import c_int
 
 from OpenGL import GL
 from OpenGL.GL import shaders
-from numpy import array
+from numpy import array, float32
 
 FRAMEBUFFER_STATUS = {
     "GL_FRAMEBUFFER_COMPLETE": GL.GL_FRAMEBUFFER_COMPLETE,
@@ -57,13 +57,15 @@ class Program:
             u = self.uniforms[key]
             if key in values:
                 if u["type"] == GL.GL_SAMPLER_2D:
+                    GL.glActiveTexture( GL.GL_TEXTURE0 )
+                    GL.glUniform1i( u["index"], 0 )
                     values[key].use()
                 if u["type"] == GL.GL_FLOAT_MAT4:
-                    GL.glUniformMatrix4fv( u["index"], 1, GL.GL_FALSE, array(values[key], dtype="float32") )
+                    GL.glUniformMatrix4fv( u["index"], 1, GL.GL_FALSE, array(values[key], dtype=float32) )
                 if u["type"] == GL.GL_FLOAT_VEC4:
-                    GL.glUniform4fv( u["index"], 1, array(values[key], dtype="float32") )
+                    GL.glUniform4fv( u["index"], 1, array(values[key], dtype=float32) )
                 if u["type"] == GL.GL_FLOAT_VEC2:
-                    GL.glUniform2fv( u["index"], 1, array(values[key], dtype="float32") )
+                    GL.glUniform2fv( u["index"], 1, array(values[key], dtype=float32) )
                 if u["type"] == GL.GL_FLOAT:
                     GL.glUniform1f( u["index"], values[key] )
                 if u["type"] == GL.GL_INT:
@@ -71,8 +73,8 @@ class Program:
 
 class VertexArrayObject:
     def __init__(self, progID, verts_list, uvs_list):
-        verts = array(verts_list, dtype="float32")
-        uvs = array(uvs_list, dtype="float32")
+        verts = array(verts_list, dtype=float32)
+        uvs = array(uvs_list, dtype=float32)
 
         vao_id = c_int()
         GL.glGenVertexArrays(1, vao_id)
@@ -85,7 +87,7 @@ class VertexArrayObject:
         GL.glBindVertexArray( vao_id.value )
         
         GL.glBindBuffer( GL.GL_ARRAY_BUFFER, vxbuf_id.value )
-        GL.glBufferData( GL.GL_ARRAY_BUFFER, verts.size * verts.itemsize, verts, GL.GL_STATIC_DRAW)
+        GL.glBufferData( GL.GL_ARRAY_BUFFER, verts.nbytes, verts, GL.GL_STATIC_DRAW)
         
         v_pos_attrib = GL.glGetAttribLocation( progID, "vertexpos" )
         GL.glEnableVertexAttribArray( v_pos_attrib )
@@ -99,7 +101,7 @@ class VertexArrayObject:
         )
         
         GL.glBindBuffer( GL.GL_ARRAY_BUFFER, uvbuf_id.value )
-        GL.glBufferData( GL.GL_ARRAY_BUFFER, uvs.size * uvs.itemsize, uvs, GL.GL_STATIC_DRAW)
+        GL.glBufferData( GL.GL_ARRAY_BUFFER, uvs.nbytes, uvs, GL.GL_STATIC_DRAW)
         
         v_uv_attrib = GL.glGetAttribLocation( progID, "vertexuv" )
         GL.glEnableVertexAttribArray( v_uv_attrib )
@@ -181,7 +183,7 @@ class RenderTarget:
         self.program.set_uniforms(uniforms)
 
         GL.glClearColor( self.fb.color.r, self.fb.color.g, self.fb.color.b, self.fb.color.a )
-        GL.glClear( GL.GL_COLOR_BUFFER_BIT )
+        GL.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT )
 
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )
 

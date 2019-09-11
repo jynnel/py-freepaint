@@ -1,3 +1,9 @@
+#!/usr/bin/python
+
+'''
+Required libs: numpy, OpenGL, Xlib, sdl2
+'''
+
 import sys
 import time
 
@@ -11,15 +17,16 @@ def main(argv):
     app = SDLApp("py-freepaint", 580, 580)
     xd = XDevices()
 
-    xd.add_device("stylus")
+    found_stylus = xd.add_device("stylus")
 
     waitpoint = time.time() + framedelta
     while app.running:
         app.parse_events()
         
-        xd.update_devices()
-        if xd.is_device_active("stylus"):
-            print("stylus", xd.get_device_values("stylus"))
+        if found_stylus:
+            xd.update_devices()
+            if xd.is_device_active("stylus"):
+                print("stylus", xd.get_device_values("stylus"))
         
         app.renderer.render()
         app.swap_window()
@@ -31,7 +38,7 @@ def main(argv):
 
     xd.close()
     app.close()
-    print("quit")
+    print("Quit.")
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

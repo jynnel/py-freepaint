@@ -44,6 +44,7 @@ class Renderer:
 
         self.ortho_matrix = mat4_ortho(self.window_size[0], self.window_size[1])
 
+        GL.glDisable( GL.GL_CULL_FACE )
         GL.glClearColor(0, 0, 0, 1)
 
         self.system_framebuffer_id = GL.glGetIntegerv( GL.GL_FRAMEBUFFER_BINDING )
@@ -64,7 +65,7 @@ class Renderer:
                 "width": self.window_size[0],
                 "height": self.window_size[0],
                 "color": RGBA(0.2, 0.2, 0.2, 1),
-                "generate mipmaps": True
+                "generate mipmaps": False
             }
         )
         self.view_transform = mat4_identity()
