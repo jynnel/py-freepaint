@@ -40,7 +40,8 @@ def main(argv):
             time.sleep(waitpoint - now)
         waitpoint = now + framedelta
 
-    xd.close()
+    if sys.platform.startswith("linux"):
+        xd.close()
     app.close()
     print("Quit.")
 
