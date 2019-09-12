@@ -1,7 +1,7 @@
 from Xlib.display import Display
 from Xlib.ext import xinput
 
-class XDevices:
+class Devices:
     def __init__(self):
         # init XInput
         self.display = Display()

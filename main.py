@@ -10,7 +10,9 @@ import time
 from modules.sdlapp import SDLApp
 
 if sys.platform.startswith("linux"):
-    from modules.xdevices import XDevices
+    from modules.xdevices import Devices
+elif sys.platform.startswith("win32"):
+    from modules.windevices import Devices
 
 framerate = 120.0
 framedelta = 1.0 / framerate
@@ -19,18 +21,17 @@ def main(argv):
     app = SDLApp("py-freepaint", 580, 580)
 
     found_stylus = False
-    if sys.platform.startswith("linux"):
-        xd = XDevices()
-        found_stylus = xd.add_device("stylus")
+    devices = Devices()
+    found_stylus = devices.add_device("stylus")
 
     waitpoint = time.time() + framedelta
     while app.running:
         app.parse_events()
         
-        if sys.platform.startswith("linux") and found_stylus:
-            xd.update_devices()
-            if xd.is_device_active("stylus"):
-                print("stylus", xd.get_device_values("stylus"))
+        if found_stylus:
+            devices.update_devices()
+            if devices.is_device_active("stylus"):
+                print("stylus", devices.get_device_values("stylus"))
         
         app.renderer.render()
         app.swap_window()
@@ -40,8 +41,7 @@ def main(argv):
             time.sleep(waitpoint - now)
         waitpoint = now + framedelta
 
-    if sys.platform.startswith("linux"):
-        xd.close()
+    devices.close()
     app.close()
     print("Quit.")
 
