@@ -1,5 +1,7 @@
 from ctypes import c_int
 
+import OpenGL
+OpenGL.ERROR_CHECKING = False
 from OpenGL import GL
 from OpenGL.GL import shaders
 
@@ -104,7 +106,7 @@ class Renderer:
             "brushcolor": RGBA(1.0, 0.0, 0.0, 1.0).list(),
             "opacity": 0.8,
             "diam": 20.0,
-            "mpos": (0, 0),
+            "mpos": (.02, .02),
             "winsize": (self.window_size[0], self.window_size[1]),
             "basetexture": self.view.fb.texture,
             "showcolor": 1,

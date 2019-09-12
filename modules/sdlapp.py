@@ -8,14 +8,15 @@ class SDLApp:
             print(sdl2.SDL_GetError())
         
         pos = sdl2.SDL_WINDOWPOS_UNDEFINED
-        self.window = sdl2.SDL_CreateWindow(title.encode('ascii'), pos, pos, width, height, sdl2.SDL_WINDOW_OPENGL)
+        self.window = sdl2.SDL_CreateWindow(title.encode('ascii'), pos, pos, width, height, sdl2.SDL_WINDOW_OPENGL | sdl2.SDL_WINDOW_RESIZABLE )
         self.window_size = [c_int(), c_int()]
 
         if not self.window:
             print(sdl2.SDL_GetError())
         
         wm_info = sdl2.SDL_SysWMinfo()
-        sdl2.SDL_VERSION(wm_info.version)
+        sdl2.SDL_GetVersion(wm_info.version)
+        print(f"SDL2 version {wm_info.version.major}.{wm_info.version.minor}.{wm_info.version.patch}")
 
         v = sdl2.video
         v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MAJOR_VERSION, 3)

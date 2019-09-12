@@ -6,5 +6,4 @@ uniform sampler2D basetexture;
 
 void main() {
     color = texture( basetexture, uv ).rgba;
-    // color += vec4( uv.x*0.2, uv.y*0.2, 0.4*0.2, 1.0 );
 }

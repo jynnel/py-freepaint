@@ -18,7 +18,7 @@ framerate = 120.0
 framedelta = 1.0 / framerate
 
 def main(argv):
-    app = SDLApp("py-freepaint", 580, 580)
+    app = SDLApp("py-fp", 580, 580)
 
     found_stylus = False
     devices = Devices()
@@ -40,6 +40,7 @@ def main(argv):
         if now < waitpoint:
             time.sleep(waitpoint - now)
         waitpoint = now + framedelta
+        # app.running = False
 
     devices.close()
     app.close()
