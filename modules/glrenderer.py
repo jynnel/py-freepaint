@@ -40,9 +40,10 @@ DEFAULT_SCREENQUAD = {
 }
 
 class Renderer:
-    def __init__(self, context, window_size):
+    def __init__(self, context, window_size, input_state):
         self.context = context        
         self.window_size = window_size
+        self.input_state = input_state
 
         self.ortho_matrix = mat4_ortho(self.window_size[0], self.window_size[1])
 
@@ -66,7 +67,7 @@ class Renderer:
             }, {
                 "width": self.window_size[0],
                 "height": self.window_size[0],
-                "color": RGBA(0.2, 0.2, 0.2, 1),
+                "color": RGBA(0.4, 0.4, 0.4, 1),
                 "generate mipmaps": False
             }
         )
@@ -85,7 +86,7 @@ class Renderer:
             }, {
                 "width": self.window_size[0],
                 "height": self.window_size[1],
-                "color": RGBA(0.2, 0.2, 0.4, 1),
+                "color": RGBA(0.2, 0.2, 0.2, 1),
                 "generate mipmaps": False
             }
         )
@@ -106,7 +107,7 @@ class Renderer:
             "brushcolor": RGBA(1.0, 0.0, 0.0, 1.0).list(),
             "opacity": 0.8,
             "diam": 20.0,
-            "mpos": (.02, .02),
+            "mpos": (self.input_state.mpos[0] / self.window_size[0], self.input_state.mpos[1] / self.window_size[1]),
             "winsize": (self.window_size[0], self.window_size[1]),
             "basetexture": self.view.fb.texture,
             "showcolor": 1,

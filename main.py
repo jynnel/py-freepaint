@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 '''
-Required libs: numpy, OpenGL, Xlib, sdl2
+Required libs:
+    Common: numpy, OpenGL, sdl2
+    Linux: Xlib
 '''
 
 import sys
-import time
 
 from modules.sdlapp import SDLApp
 
@@ -14,8 +15,8 @@ if sys.platform.startswith("linux"):
 elif sys.platform.startswith("win32"):
     from modules.windevices import Devices
 
-framerate = 120.0
-framedelta = 1.0 / framerate
+FPS = 120.0
+FRAME_DELTA = 1000.0 / FPS
 
 def main(argv):
     app = SDLApp("py-fp", 580, 580)
@@ -24,7 +25,7 @@ def main(argv):
     devices = Devices()
     found_stylus = devices.add_device("stylus")
 
-    waitpoint = time.time() + framedelta
+    waitpoint = app.get_ticks() + FRAME_DELTA
     while app.running:
         app.parse_events()
         
@@ -36,10 +37,10 @@ def main(argv):
         app.renderer.render()
         app.swap_window()
 
-        now = time.time()
+        now = app.get_ticks()
         if now < waitpoint:
-            time.sleep(waitpoint - now)
-        waitpoint = now + framedelta
+            app.delay(waitpoint - now)
+        waitpoint = app.get_ticks() + FRAME_DELTA
         # app.running = False
 
     devices.close()
