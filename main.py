@@ -30,6 +30,9 @@ def main(argv):
         app.update_input_state()
         app.check_keybinds()
 
+        if app.input_state.active_operator:
+            print("active operator", app.input_state.active_operator)
+
         if found_stylus:
             devices.update_devices()
             if devices.is_device_active("stylus"):

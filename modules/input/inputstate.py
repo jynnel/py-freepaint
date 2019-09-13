@@ -1,6 +1,9 @@
+KeyJustReleased = -1
+KeyNotPressed = 0
+KeyPressed = 1
+
 class InputState:
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self):
         self.mpos_history = [(0,0), (0,0)]
         self.mpos = (0, 0)
         self.mdelta = (0, 0)
@@ -8,307 +11,364 @@ class InputState:
         init_key_state(self.key_state)
 
         self.mod_state = {
-            "ctrl": False,
-            "shift": False,
-            "alt": False,
+            "ctrl": KeyNotPressed,
+            "shift": KeyNotPressed,
+            "alt": KeyNotPressed,
         }
 
         self.mouse_state = {
-            "mouse1": False,
-            "mouse2": False,
-            "mouse3": False,
-            "mouse4": False,
-            "mouse5": False
+            "mouse_left": KeyNotPressed,
+            "mouse_middle": KeyNotPressed,
+            "mouse_right": KeyNotPressed,
+            "mouse_x1": KeyNotPressed,
+            "mouse_x2": KeyNotPressed
         }
 
         self.keybinds = []
+        self.active_operator = ""
 
-    def add_keybind(self, input_state, keys, motion, operator):
-        self.keybinds.append(KeyBind(input_state, keys, motion, operator))
+    def add_keybind(self, keys, motion, operator, on):
+        self.keybinds.append(KeyBind(keys, motion, operator, on))
 
-    def update_mouse_state(self, mouse_state, x, y):
+    def update_mouse_position(self, x, y):
         self.mpos = (x, y)
         self.mdelta = (self.mpos[0] - self.mpos_history[-1][0], self.mpos[1] - self.mpos_history[-1][1])
         self.mpos_history.append(self.mpos)
         if len(self.mpos_history) > 16:
             self.mpos_history = self.mpos_history[-16::]
-        
-        for key in mouse_state:
-            self.mouse_state[key] = mouse_state[key]
+    
+    def check_keybinds(self, deadzone):
+        for bind in self.keybinds:
+            if self.active_operator and self.active_operator != bind.operator:
+                continue
+
+            key_check = True
+            for key in bind.keys:
+                if key in self.mod_state.keys():
+                    key_check = key_check and bind.on == self.mod_state[key]
+                elif key in self.mouse_state.keys():
+                    key_check = key_check and bind.on == self.mouse_state[key]
+                elif key in self.key_state.keys():
+                    key_check = key_check and bind.on == self.key_state[key]
+                else:
+                    print("Unknown keybind key:", key)
+                    key_check = False
+            
+            if key_check:
+                if bind.motion in ("horizontal", "vertical"):
+                    bind.md_accum[0] += self.mdelta[0]
+                    bind.md_accum[1] += self.mdelta[1]
+                    absx = abs(bind.md_accum[0])
+                    absy = abs(bind.md_accum[1])
+                    if bind.motion.startswith("h"):
+                        if not self.active_operator and (absx > deadzone and absx > absy):
+                            print(self.active_operator)
+                            self.active_operator = bind.operator
+                            return
+                    else:
+                        if not self.active_operator and (absy > deadzone and absy > absx):
+                            print(self.active_operator)
+                            self.active_operator = bind.operator
+                            return
+                else:
+                    self.active_operator = bind.operator
+                    return
+            else:
+                self.active_operator = ""
+                bind.md_accum = [0, 0]
 
 class KeyBind:
-    def __init__(self, input_state, keys, motion, operator):
-        self.input_state = input_state
+    def __init__(self, keys, motion, operator, on):
         self.keys = keys
         self.motion = motion
         self.operator = operator
+        self.on = on
         self.md_accum = [0, 0]
     
-    def is_active(self):
-        key_state = self.input_state.key_state
-        mod_state = self.input_state.mod_state
-        mouse_state = self.input_state.mouse_state
-        md = self.input_state.mdelta
-        deadzone = self.input_state.settings.motion_deadzone
+    # def is_active(self, input_state):
+    #     key_state = input_state.key_state
+    #     mod_state = input_state.mod_state
+    #     mouse_state = input_state.mouse_state
+    #     md = input_state.mdelta
+    #     deadzone = input_state.settings.motion_deadzone
 
-        key_check = True
-        for key in self.keys:
-            if key in ("ctrl", "shift", "alt"):
-                key_check = key_check & mod_state[key]
-            elif key in ("mouse1", "mouse2", "mouse3", "mouse4", "mouse5"):
-                key_check = key_check & mouse_state[key]
-            else:
-                key_check = key_check & key_state[key]
-        if key_check:
-            if self.motion in ("horizontal", "vertical"):
-                self.md_accum[0] += md[0]
-                self.md_accum[1] += md[1]
-                if self.motion.startswith("h"):
-                    return True if abs(self.md_accum[0]) > deadzone else False
-                else:
-                    return True if abs(self.md_accum[1]) > deadzone else False
-            else:
-                return True
-        else:
-            self.md_accum = [0, 0]
-            return False
+    #     active_operator = input_state.active_operator
+    #     if active_operator != "" and active_operator != self.operator:
+    #         return False
+
+    #     key_check = True
+    #     for key in self.keys:
+    #         if key in input_state.mod_state.keys():
+    #             key_check = key_check and self.on == mod_state[key]
+    #         elif key in input_state.mouse_state.keys():
+    #             key_check = key_check and self.on == mouse_state[key]
+    #         elif key in input_state.key_state.keys():
+    #             key_check = key_check and self.on == key_state[key]
+    #         else:
+    #             print("Unknown keybind key:", key)
+    #             key_check = False
+    #     if key_check:
+    #         if self.motion in ("horizontal", "vertical"):
+    #             self.md_accum[0] += md[0]
+    #             self.md_accum[1] += md[1]
+    #             absx = abs(self.md_accum[0])
+    #             absy = abs(self.md_accum[1])
+    #             if self.motion.startswith("h"):
+    #                 if active_operator == self.operator or (absx > deadzone and absx > absy):
+    #                     input_state.active_operator = self.operator
+    #                     return True
+    #                 else:
+    #                     return False
+    #             else:
+    #                 if active_operator == self.operator or (absy > deadzone and absy > absx):
+    #                     input_state.active_operator = self.operator
+    #                     return True
+    #                 else:
+    #                     return False
+    #         else:
+    #             input_state.active_operator = self.operator
+    #             return True
+    #     else:
+    #         input_state.active_operator = ""
+    #         self.md_accum = [0, 0]
+    #         return False
     
     def __str__(self):
-        return f"keys: {self.keys}, motion: {self.motion}, command: {self.operator}"
+        return f"keys: {self.keys}, motion: {self.motion}, command: {self.operator}, on: {self.on}"
 
 def init_key_state(ks):
-    ks["enter"] = False
-    ks["escape"] = False
-    ks["backspace"] = False
-    ks["tab"] = False
-    ks["space"] = False
-    ks["exclaim"] = False
-    ks["quotedbl"] = False
-    ks["hash"] = False
-    ks["percent"] = False
-    ks["dollar"] = False
-    ks["ampersand"] = False
-    ks["quote"] = False
-    ks["leftparen"] = False
-    ks["rightparen"] = False
-    ks["asterisk"] = False
-    ks["plus"] = False
-    ks["comma"] = False
-    ks["minus"] = False
-    ks["period"] = False
-    ks["slash"] = False
-    ks["k0"] = False
-    ks["k1"] = False
-    ks["k2"] = False
-    ks["k3"] = False
-    ks["k4"] = False
-    ks["k5"] = False
-    ks["k6"] = False
-    ks["k7"] = False
-    ks["k8"] = False
-    ks["k9"] = False
-    ks["colon"] = False
-    ks["semicolon"] = False
-    ks["less"] = False
-    ks["equals"] = False
-    ks["greater"] = False
-    ks["question"] = False
-    ks["at"] = False
-    ks["leftbracket"] = False
-    ks["backslash"] = False
-    ks["rightbracket"] = False
-    ks["caret"] = False
-    ks["underscore"] = False
-    ks["backquote"] = False
-    ks["a"] = False
-    ks["b"] = False
-    ks["c"] = False
-    ks["d"] = False
-    ks["e"] = False
-    ks["f"] = False
-    ks["g"] = False
-    ks["h"] = False
-    ks["i"] = False
-    ks["j"] = False
-    ks["k"] = False
-    ks["l"] = False
-    ks["m"] = False
-    ks["n"] = False
-    ks["o"] = False
-    ks["p"] = False
-    ks["q"] = False
-    ks["r"] = False
-    ks["s"] = False
-    ks["t"] = False
-    ks["u"] = False
-    ks["v"] = False
-    ks["w"] = False
-    ks["x"] = False
-    ks["y"] = False
-    ks["z"] = False
-    ks["capslock"] = False
-    ks["f1"] = False
-    ks["f2"] = False
-    ks["f3"] = False
-    ks["f4"] = False
-    ks["f5"] = False
-    ks["f6"] = False
-    ks["f7"] = False
-    ks["f8"] = False
-    ks["f9"] = False
-    ks["f10"] = False
-    ks["f11"] = False
-    ks["f12"] = False
-    ks["printscreen"] = False
-    ks["scrolllock"] = False
-    ks["pause"] = False
-    ks["insert"] = False
-    ks["home"] = False
-    ks["pageup"] = False
-    ks["delete"] = False
-    ks["end"] = False
-    ks["pagedown"] = False
-    ks["right"] = False
-    ks["left"] = False
-    ks["down"] = False
-    ks["up"] = False
-    ks["numlockclear"] = False
-    ks["kp_divide"] = False
-    ks["kp_multiply"] = False
-    ks["kp_minus"] = False
-    ks["kp_plus"] = False
-    ks["kp_enter"] = False
-    ks["kp_1"] = False
-    ks["kp_2"] = False
-    ks["kp_3"] = False
-    ks["kp_4"] = False
-    ks["kp_5"] = False
-    ks["kp_6"] = False
-    ks["kp_7"] = False
-    ks["kp_8"] = False
-    ks["kp_9"] = False
-    ks["kp_0"] = False
-    ks["kp_period"] = False
-    ks["application"] = False
-    ks["power"] = False
-    ks["kp_equals"] = False
-    ks["f13"] = False
-    ks["f14"] = False
-    ks["f15"] = False
-    ks["f16"] = False
-    ks["f17"] = False
-    ks["f18"] = False
-    ks["f19"] = False
-    ks["f20"] = False
-    ks["f21"] = False
-    ks["f22"] = False
-    ks["f23"] = False
-    ks["f24"] = False
-    ks["execute"] = False
-    ks["help"] = False
-    ks["menu"] = False
-    ks["select"] = False
-    ks["stop"] = False
-    ks["again"] = False
-    ks["undo"] = False
-    ks["cut"] = False
-    ks["copy"] = False
-    ks["paste"] = False
-    ks["find"] = False
-    ks["mute"] = False
-    ks["volumeup"] = False
-    ks["volumedown"] = False
-    ks["kp_comma"] = False
-    ks["kp_equalsas400"] = False
-    ks["alterase"] = False
-    ks["sysreq"] = False
-    ks["cancel"] = False
-    ks["clear"] = False
-    ks["prior"] = False
-    ks["return2"] = False
-    ks["separator"] = False
-    ks["out"] = False
-    ks["oper"] = False
-    ks["clearagain"] = False
-    ks["crsel"] = False
-    ks["exsel"] = False
-    ks["kp_00"] = False
-    ks["kp_000"] = False
-    ks["thousandsseparator"] = False
-    ks["decimalseparator"] = False
-    ks["currencyunit"] = False
-    ks["currencysubunit"] = False
-    ks["kp_leftparen"] = False
-    ks["kp_rightparen"] = False
-    ks["kp_leftbrace"] = False
-    ks["kp_rightbrace"] = False
-    ks["kp_tab"] = False
-    ks["kp_backspace"] = False
-    ks["kp_a"] = False
-    ks["kp_b"] = False
-    ks["kp_c"] = False
-    ks["kp_d"] = False
-    ks["kp_e"] = False
-    ks["kp_f"] = False
-    ks["kp_xor"] = False
-    ks["kp_power"] = False
-    ks["kp_percent"] = False
-    ks["kp_less"] = False
-    ks["kp_greater"] = False
-    ks["kp_ampersand"] = False
-    ks["kp_dblampersand"] = False
-    ks["kp_verticalbar"] = False
-    ks["kp_dblverticalbar"] = False
-    ks["kp_colon"] = False
-    ks["kp_hash"] = False
-    ks["kp_space"] = False
-    ks["kp_at"] = False
-    ks["kp_exclam"] = False
-    ks["kp_memstore"] = False
-    ks["kp_memrecall"] = False
-    ks["kp_memclear"] = False
-    ks["kp_memadd"] = False
-    ks["kp_memsubtract"] = False
-    ks["kp_memmultiply"] = False
-    ks["kp_memdivide"] = False
-    ks["kp_plusminus"] = False
-    ks["kp_clear"] = False
-    ks["kp_clearentry"] = False
-    ks["kp_binary"] = False
-    ks["kp_octal"] = False
-    ks["kp_decimal"] = False
-    ks["kp_hexadecimal"] = False
-    ks["lctrl"] = False
-    ks["lshift"] = False
-    ks["lalt"] = False
-    ks["rctrl"] = False
-    ks["rshift"] = False
-    ks["ralt"] = False
-    ks["mode"] = False
-    ks["lgui"] = False
-    ks["rgui"] = False
-    ks["audionext"] = False
-    ks["audioprev"] = False
-    ks["audiostop"] = False
-    ks["audioplay"] = False
-    ks["audiomute"] = False
-    ks["mediaselect"] = False
-    ks["www"] = False
-    ks["mail"] = False
-    ks["calculator"] = False
-    ks["computer"] = False
-    ks["ac_search"] = False
-    ks["ac_home"] = False
-    ks["ac_back"] = False
-    ks["ac_forward"] = False
-    ks["ac_stop"] = False
-    ks["ac_refresh"] = False
-    ks["ac_bookmarks"] = False
-    ks["brightnessdown"] = False
-    ks["brightnessup"] = False
-    ks["displayswitch"] = False
-    ks["kbdillumtoggle"] = False
-    ks["kbdillumdown"] = False
-    ks["kbdillumup"] = False
-    ks["eject"] = False
-    ks["sleep"] = False
+    ks["enter"] = KeyNotPressed
+    ks["escape"] = KeyNotPressed
+    ks["backspace"] = KeyNotPressed
+    ks["tab"] = KeyNotPressed
+    ks["space"] = KeyNotPressed
+    ks["exclaim"] = KeyNotPressed
+    ks["quotedbl"] = KeyNotPressed
+    ks["hash"] = KeyNotPressed
+    ks["percent"] = KeyNotPressed
+    ks["dollar"] = KeyNotPressed
+    ks["ampersand"] = KeyNotPressed
+    ks["quote"] = KeyNotPressed
+    ks["leftparen"] = KeyNotPressed
+    ks["rightparen"] = KeyNotPressed
+    ks["asterisk"] = KeyNotPressed
+    ks["plus"] = KeyNotPressed
+    ks["comma"] = KeyNotPressed
+    ks["minus"] = KeyNotPressed
+    ks["period"] = KeyNotPressed
+    ks["slash"] = KeyNotPressed
+    ks["k0"] = KeyNotPressed
+    ks["k1"] = KeyNotPressed
+    ks["k2"] = KeyNotPressed
+    ks["k3"] = KeyNotPressed
+    ks["k4"] = KeyNotPressed
+    ks["k5"] = KeyNotPressed
+    ks["k6"] = KeyNotPressed
+    ks["k7"] = KeyNotPressed
+    ks["k8"] = KeyNotPressed
+    ks["k9"] = KeyNotPressed
+    ks["colon"] = KeyNotPressed
+    ks["semicolon"] = KeyNotPressed
+    ks["less"] = KeyNotPressed
+    ks["equals"] = KeyNotPressed
+    ks["greater"] = KeyNotPressed
+    ks["question"] = KeyNotPressed
+    ks["at"] = KeyNotPressed
+    ks["leftbracket"] = KeyNotPressed
+    ks["backslash"] = KeyNotPressed
+    ks["rightbracket"] = KeyNotPressed
+    ks["caret"] = KeyNotPressed
+    ks["underscore"] = KeyNotPressed
+    ks["backquote"] = KeyNotPressed
+    ks["a"] = KeyNotPressed
+    ks["b"] = KeyNotPressed
+    ks["c"] = KeyNotPressed
+    ks["d"] = KeyNotPressed
+    ks["e"] = KeyNotPressed
+    ks["f"] = KeyNotPressed
+    ks["g"] = KeyNotPressed
+    ks["h"] = KeyNotPressed
+    ks["i"] = KeyNotPressed
+    ks["j"] = KeyNotPressed
+    ks["k"] = KeyNotPressed
+    ks["l"] = KeyNotPressed
+    ks["m"] = KeyNotPressed
+    ks["n"] = KeyNotPressed
+    ks["o"] = KeyNotPressed
+    ks["p"] = KeyNotPressed
+    ks["q"] = KeyNotPressed
+    ks["r"] = KeyNotPressed
+    ks["s"] = KeyNotPressed
+    ks["t"] = KeyNotPressed
+    ks["u"] = KeyNotPressed
+    ks["v"] = KeyNotPressed
+    ks["w"] = KeyNotPressed
+    ks["x"] = KeyNotPressed
+    ks["y"] = KeyNotPressed
+    ks["z"] = KeyNotPressed
+    ks["capslock"] = KeyNotPressed
+    ks["f1"] = KeyNotPressed
+    ks["f2"] = KeyNotPressed
+    ks["f3"] = KeyNotPressed
+    ks["f4"] = KeyNotPressed
+    ks["f5"] = KeyNotPressed
+    ks["f6"] = KeyNotPressed
+    ks["f7"] = KeyNotPressed
+    ks["f8"] = KeyNotPressed
+    ks["f9"] = KeyNotPressed
+    ks["f10"] = KeyNotPressed
+    ks["f11"] = KeyNotPressed
+    ks["f12"] = KeyNotPressed
+    ks["printscreen"] = KeyNotPressed
+    ks["scrolllock"] = KeyNotPressed
+    ks["pause"] = KeyNotPressed
+    ks["insert"] = KeyNotPressed
+    ks["home"] = KeyNotPressed
+    ks["pageup"] = KeyNotPressed
+    ks["delete"] = KeyNotPressed
+    ks["end"] = KeyNotPressed
+    ks["pagedown"] = KeyNotPressed
+    ks["right"] = KeyNotPressed
+    ks["left"] = KeyNotPressed
+    ks["down"] = KeyNotPressed
+    ks["up"] = KeyNotPressed
+    ks["numlockclear"] = KeyNotPressed
+    ks["kp_divide"] = KeyNotPressed
+    ks["kp_multiply"] = KeyNotPressed
+    ks["kp_minus"] = KeyNotPressed
+    ks["kp_plus"] = KeyNotPressed
+    ks["kp_enter"] = KeyNotPressed
+    ks["kp_1"] = KeyNotPressed
+    ks["kp_2"] = KeyNotPressed
+    ks["kp_3"] = KeyNotPressed
+    ks["kp_4"] = KeyNotPressed
+    ks["kp_5"] = KeyNotPressed
+    ks["kp_6"] = KeyNotPressed
+    ks["kp_7"] = KeyNotPressed
+    ks["kp_8"] = KeyNotPressed
+    ks["kp_9"] = KeyNotPressed
+    ks["kp_0"] = KeyNotPressed
+    ks["kp_period"] = KeyNotPressed
+    ks["application"] = KeyNotPressed
+    ks["power"] = KeyNotPressed
+    ks["kp_equals"] = KeyNotPressed
+    ks["f13"] = KeyNotPressed
+    ks["f14"] = KeyNotPressed
+    ks["f15"] = KeyNotPressed
+    ks["f16"] = KeyNotPressed
+    ks["f17"] = KeyNotPressed
+    ks["f18"] = KeyNotPressed
+    ks["f19"] = KeyNotPressed
+    ks["f20"] = KeyNotPressed
+    ks["f21"] = KeyNotPressed
+    ks["f22"] = KeyNotPressed
+    ks["f23"] = KeyNotPressed
+    ks["f24"] = KeyNotPressed
+    ks["execute"] = KeyNotPressed
+    ks["help"] = KeyNotPressed
+    ks["menu"] = KeyNotPressed
+    ks["select"] = KeyNotPressed
+    ks["stop"] = KeyNotPressed
+    ks["again"] = KeyNotPressed
+    ks["undo"] = KeyNotPressed
+    ks["cut"] = KeyNotPressed
+    ks["copy"] = KeyNotPressed
+    ks["paste"] = KeyNotPressed
+    ks["find"] = KeyNotPressed
+    ks["mute"] = KeyNotPressed
+    ks["volumeup"] = KeyNotPressed
+    ks["volumedown"] = KeyNotPressed
+    ks["kp_comma"] = KeyNotPressed
+    ks["kp_equalsas400"] = KeyNotPressed
+    ks["alterase"] = KeyNotPressed
+    ks["sysreq"] = KeyNotPressed
+    ks["cancel"] = KeyNotPressed
+    ks["clear"] = KeyNotPressed
+    ks["prior"] = KeyNotPressed
+    ks["return2"] = KeyNotPressed
+    ks["separator"] = KeyNotPressed
+    ks["out"] = KeyNotPressed
+    ks["oper"] = KeyNotPressed
+    ks["clearagain"] = KeyNotPressed
+    ks["crsel"] = KeyNotPressed
+    ks["exsel"] = KeyNotPressed
+    ks["kp_00"] = KeyNotPressed
+    ks["kp_000"] = KeyNotPressed
+    ks["thousandsseparator"] = KeyNotPressed
+    ks["decimalseparator"] = KeyNotPressed
+    ks["currencyunit"] = KeyNotPressed
+    ks["currencysubunit"] = KeyNotPressed
+    ks["kp_leftparen"] = KeyNotPressed
+    ks["kp_rightparen"] = KeyNotPressed
+    ks["kp_leftbrace"] = KeyNotPressed
+    ks["kp_rightbrace"] = KeyNotPressed
+    ks["kp_tab"] = KeyNotPressed
+    ks["kp_backspace"] = KeyNotPressed
+    ks["kp_a"] = KeyNotPressed
+    ks["kp_b"] = KeyNotPressed
+    ks["kp_c"] = KeyNotPressed
+    ks["kp_d"] = KeyNotPressed
+    ks["kp_e"] = KeyNotPressed
+    ks["kp_f"] = KeyNotPressed
+    ks["kp_xor"] = KeyNotPressed
+    ks["kp_power"] = KeyNotPressed
+    ks["kp_percent"] = KeyNotPressed
+    ks["kp_less"] = KeyNotPressed
+    ks["kp_greater"] = KeyNotPressed
+    ks["kp_ampersand"] = KeyNotPressed
+    ks["kp_dblampersand"] = KeyNotPressed
+    ks["kp_verticalbar"] = KeyNotPressed
+    ks["kp_dblverticalbar"] = KeyNotPressed
+    ks["kp_colon"] = KeyNotPressed
+    ks["kp_hash"] = KeyNotPressed
+    ks["kp_space"] = KeyNotPressed
+    ks["kp_at"] = KeyNotPressed
+    ks["kp_exclam"] = KeyNotPressed
+    ks["kp_memstore"] = KeyNotPressed
+    ks["kp_memrecall"] = KeyNotPressed
+    ks["kp_memclear"] = KeyNotPressed
+    ks["kp_memadd"] = KeyNotPressed
+    ks["kp_memsubtract"] = KeyNotPressed
+    ks["kp_memmultiply"] = KeyNotPressed
+    ks["kp_memdivide"] = KeyNotPressed
+    ks["kp_plusminus"] = KeyNotPressed
+    ks["kp_clear"] = KeyNotPressed
+    ks["kp_clearentry"] = KeyNotPressed
+    ks["kp_binary"] = KeyNotPressed
+    ks["kp_octal"] = KeyNotPressed
+    ks["kp_decimal"] = KeyNotPressed
+    ks["kp_hexadecimal"] = KeyNotPressed
+    ks["lctrl"] = KeyNotPressed
+    ks["lshift"] = KeyNotPressed
+    ks["lalt"] = KeyNotPressed
+    ks["rctrl"] = KeyNotPressed
+    ks["rshift"] = KeyNotPressed
+    ks["ralt"] = KeyNotPressed
+    ks["mode"] = KeyNotPressed
+    ks["lgui"] = KeyNotPressed
+    ks["rgui"] = KeyNotPressed
+    ks["audionext"] = KeyNotPressed
+    ks["audioprev"] = KeyNotPressed
+    ks["audiostop"] = KeyNotPressed
+    ks["audioplay"] = KeyNotPressed
+    ks["audiomute"] = KeyNotPressed
+    ks["mediaselect"] = KeyNotPressed
+    ks["www"] = KeyNotPressed
+    ks["mail"] = KeyNotPressed
+    ks["calculator"] = KeyNotPressed
+    ks["computer"] = KeyNotPressed
+    ks["ac_search"] = KeyNotPressed
+    ks["ac_home"] = KeyNotPressed
+    ks["ac_back"] = KeyNotPressed
+    ks["ac_forward"] = KeyNotPressed
+    ks["ac_stop"] = KeyNotPressed
+    ks["ac_refresh"] = KeyNotPressed
+    ks["ac_bookmarks"] = KeyNotPressed
+    ks["brightnessdown"] = KeyNotPressed
+    ks["brightnessup"] = KeyNotPressed
+    ks["displayswitch"] = KeyNotPressed
+    ks["kbdillumtoggle"] = KeyNotPressed
+    ks["kbdillumdown"] = KeyNotPressed
+    ks["kbdillumup"] = KeyNotPressed
+    ks["eject"] = KeyNotPressed
+    ks["sleep"] = KeyNotPressed

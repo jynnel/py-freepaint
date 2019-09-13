@@ -18,18 +18,18 @@
   "bindings":[
     { "command": "toggle_debug", "keys": ["backquote"] },
     
-    { "command": "canvas_draw", "keys": ["mouse1"] },
+    { "command": "canvas_draw", "keys": ["mouse_left"] },
     { "command": "canvas_clear", "keys": ["delete"] },
     
-    { "command": "view_pan",   "keys": ["ctrl","mouse3"] },
-    { "command": "view_rot",   "keys": ["mouse3"], "motion": "horizontal" },
-    { "command": "view_zoom",  "keys": ["mouse3"], "motion": "vertical" },
+    { "command": "view_pan",   "keys": ["ctrl","mouse_middle"] },
+    { "command": "view_rot",   "keys": ["mouse_middle"], "motion": "horizontal" },
+    { "command": "view_zoom",  "keys": ["mouse_middle"], "motion": "vertical" },
     
-    { "command": "color_pick", "keys": ["mouse2"] },
-    { "command": "brush_soften", "keys": ["mouse2"], "motion": "horizontal" },
-    { "command": "brush_resize", "keys": ["mouse2"], "motion": "vertical" },
+    { "command": "color_pick", "keys": ["mouse_right"], "on": "release" },
+    { "command": "brush_soften", "keys": ["mouse_right"], "motion": "horizontal" },
+    { "command": "brush_resize", "keys": ["mouse_right"], "motion": "vertical" },
     
-    { "command": "view_pan",   "keys": ["kp_enter","mouse3"] },
+    { "command": "view_pan",   "keys": ["kp_enter","mouse_middle"] },
     { "command": "view_reset", "keys": ["kp_period"] },
     { "command": "view_flip",  "keys": ["kp_5"] },
     

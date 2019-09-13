@@ -4,7 +4,7 @@ initkeystate = '''ks["%s"] = False
 '''
 
 symcheck = '''elif ev.keysym.sym == sdl2.%s:
-    keystate["%s"] = True if ev.type == sdl2.SDL_KEYDOWN else False
+    keystate["%s"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustPressed if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
 '''
 
 path = os.path.join(os.getcwd(), "codegen")
@@ -29,5 +29,5 @@ with open("sdlkeys_bare", 'r') as infile:
     # out = ''.join([case.format(line.strip('\n'), line.split('_', 1)[1].lower().strip('\n')) for line in infile.readlines()])
     # out = ''.join(["struct InputKey %s;\n"%line.split('_', 1)[1].lower().strip('\n') for line in infile.readlines()])
     # out = ''.join(['rd->input.%s.name = "%s\\0";\n'%(line.split('_', 1)[1].lower().strip('\n'), line.split('_', 1)[1].lower().strip('\n')) for line in infile.readlines()])
-    with open("keycodechecks", 'w') as outfile:
+    with open("keycodechecks.txt", 'w') as outfile:
         outfile.write(out)

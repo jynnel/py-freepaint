@@ -2,3 +2,5 @@ __pycache__/
 python3.7.trace
 apitrace/*
 settings.json
+codegen/*.txt
+
