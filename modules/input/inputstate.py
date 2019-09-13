@@ -1,11 +1,22 @@
+from modules.settings import JsonLoadable
+
+MposHistoryLength = 16
+
 KeyJustReleased = -1
 KeyNotPressed = 0
 KeyPressed = 1
 
+AxisHorizontal = 0
+AxisVertical = 1
+
 class InputState:
     def __init__(self):
-        self.mpos_history = [(0,0), (0,0)]
+        self.stylus = None
+
         self.mpos = (0, 0)
+        self.mpos_history = [(0,0), (0,0)]
+        self.mpos_w = (0, 0)
+        self.mpos_w_history = [(0,0), (0,0)]
         self.mdelta = (0, 0)
         self.key_state = {}
         init_key_state(self.key_state)
@@ -26,6 +37,7 @@ class InputState:
 
         self.keybinds = []
         self.active_operator = ""
+        self.active_axis = AxisHorizontal
 
     def add_keybind(self, keys, motion, operator, on):
         self.keybinds.append(KeyBind(keys, motion, operator, on))
@@ -34,8 +46,14 @@ class InputState:
         self.mpos = (x, y)
         self.mdelta = (self.mpos[0] - self.mpos_history[-1][0], self.mpos[1] - self.mpos_history[-1][1])
         self.mpos_history.append(self.mpos)
-        if len(self.mpos_history) > 16:
-            self.mpos_history = self.mpos_history[-16::]
+        if len(self.mpos_history) > MposHistoryLength:
+            self.mpos_history = self.mpos_history[-MposHistoryLength::]
+    
+    def update_world_mouse_position(self, x, y):
+        self.mpos_w = (x, y)
+        self.mpos_w_history.append(self.mpos_w)
+        if len(self.mpos_w_history) > MposHistoryLength:
+            self.mpos_w_history = self.mpos_w_history[-MposHistoryLength::]
     
     def check_keybinds(self, deadzone):
         for bind in self.keybinds:
@@ -62,12 +80,12 @@ class InputState:
                     absy = abs(bind.md_accum[1])
                     if bind.motion.startswith("h"):
                         if not self.active_operator and (absx > deadzone and absx > absy):
-                            print(self.active_operator)
+                            self.active_axis = AxisHorizontal
                             self.active_operator = bind.operator
                             return
                     else:
                         if not self.active_operator and (absy > deadzone and absy > absx):
-                            print(self.active_operator)
+                            self.active_axis = AxisVertical
                             self.active_operator = bind.operator
                             return
                 else:
@@ -77,6 +95,15 @@ class InputState:
                 self.active_operator = ""
                 bind.md_accum = [0, 0]
 
+class Brush(JsonLoadable):
+    def __init__(self):
+        self.size = 20.0
+        self.softness = 1.0
+        self.opacity = 1.0
+        self.color = [ 0.9, 0.2, 0.4, 1.0 ]
+        self.showcolor = False
+        self.mixamt = 0.0
+
 class KeyBind:
     def __init__(self, keys, motion, operator, on):
         self.keys = keys
@@ -84,55 +111,7 @@ class KeyBind:
         self.operator = operator
         self.on = on
         self.md_accum = [0, 0]
-    
-    # def is_active(self, input_state):
-    #     key_state = input_state.key_state
-    #     mod_state = input_state.mod_state
-    #     mouse_state = input_state.mouse_state
-    #     md = input_state.mdelta
-    #     deadzone = input_state.settings.motion_deadzone
 
-    #     active_operator = input_state.active_operator
-    #     if active_operator != "" and active_operator != self.operator:
-    #         return False
-
-    #     key_check = True
-    #     for key in self.keys:
-    #         if key in input_state.mod_state.keys():
-    #             key_check = key_check and self.on == mod_state[key]
-    #         elif key in input_state.mouse_state.keys():
-    #             key_check = key_check and self.on == mouse_state[key]
-    #         elif key in input_state.key_state.keys():
-    #             key_check = key_check and self.on == key_state[key]
-    #         else:
-    #             print("Unknown keybind key:", key)
-    #             key_check = False
-    #     if key_check:
-    #         if self.motion in ("horizontal", "vertical"):
-    #             self.md_accum[0] += md[0]
-    #             self.md_accum[1] += md[1]
-    #             absx = abs(self.md_accum[0])
-    #             absy = abs(self.md_accum[1])
-    #             if self.motion.startswith("h"):
-    #                 if active_operator == self.operator or (absx > deadzone and absx > absy):
-    #                     input_state.active_operator = self.operator
-    #                     return True
-    #                 else:
-    #                     return False
-    #             else:
-    #                 if active_operator == self.operator or (absy > deadzone and absy > absx):
-    #                     input_state.active_operator = self.operator
-    #                     return True
-    #                 else:
-    #                     return False
-    #         else:
-    #             input_state.active_operator = self.operator
-    #             return True
-    #     else:
-    #         input_state.active_operator = ""
-    #         self.md_accum = [0, 0]
-    #         return False
-    
     def __str__(self):
         return f"keys: {self.keys}, motion: {self.motion}, command: {self.operator}, on: {self.on}"
 

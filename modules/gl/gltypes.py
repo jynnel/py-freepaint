@@ -164,7 +164,12 @@ class Framebuffer:
         self.height = height
         self.color = color
         self.gen_mipmaps = gen_mipmaps
-    
+
+    def clear(self):
+        GL.glBindFramebuffer( GL.GL_FRAMEBUFFER, self.id )
+        GL.glClearColor( self.color[0], self.color[1], self.color[2], self.color[3] )
+        GL.glClear( GL.GL_COLOR_BUFFER_BIT )
+
     def use(self):
         GL.glBindFramebuffer( GL.GL_FRAMEBUFFER, self.id )
 
@@ -189,6 +194,7 @@ class RenderTarget:
 class DualFramebuffer:
     def __init__(self, width, height, color, gen_mipmaps):
         self.toggle = 0
+        self.size = [width, height]
 
         self.fbs = [
             Framebuffer(width, height, color, gen_mipmaps),
@@ -205,8 +211,14 @@ class DualFramebuffer:
         fb = self.fbs[self.toggle]
         fb.use()
 
+        GL.glViewport(0, 0, self.size[0], self.size[1])
+
         self.fbs[0 if self.toggle else 1].texture.use()
         
         program.set_uniforms(uniforms)
 
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )
+    
+    def clear(self):
+        for fb in self.fbs:
+            fb.clear()
