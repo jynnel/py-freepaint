@@ -1,0 +1,56 @@
+{
+  "settings":{
+    "win_start_size": [580, 580],
+    
+    "motion_deadzone": 10,
+    
+    "double_click_time": 200,
+    
+    "show_cursor": false,
+    "show_debug": true,
+    
+    "rear_color": [ 0.25, 0.25, 0.25, 1.0 ],
+    
+    "canvas_size": [ 512, 512 ],
+    "canvas_color": [ 0.4, 0.4, 0.4, 1.0 ]
+  },
+  
+  "bindings":[
+    { "command": "toggle_debug", "keys": ["backquote"] },
+    
+    { "command": "canvas_draw", "keys": ["mouse1"] },
+    { "command": "canvas_clear", "keys": ["delete"] },
+    
+    { "command": "view_pan",   "keys": ["ctrl","mouse3"] },
+    { "command": "view_rot",   "keys": ["mouse3"], "motion": "horizontal" },
+    { "command": "view_zoom",  "keys": ["mouse3"], "motion": "vertical" },
+    
+    { "command": "color_pick", "keys": ["mouse2"] },
+    { "command": "brush_soften", "keys": ["mouse2"], "motion": "horizontal" },
+    { "command": "brush_resize", "keys": ["mouse2"], "motion": "vertical" },
+    
+    { "command": "view_pan",   "keys": ["kp_enter","mouse3"] },
+    { "command": "view_reset", "keys": ["kp_period"] },
+    { "command": "view_flip",  "keys": ["kp_5"] },
+    
+    { "command": "canvas_draw", "keys": ["u"] },
+    { "command": "view_reset", "keys": ["semicolon"] },
+    { "command": "view_flip",  "keys": ["k"] },
+    { "command": "canvas_clear", "keys": ["x"] },
+    
+    { "command": "view_pan",   "keys": ["quote"] },
+    { "command": "view_rot",   "keys": ["comma"], "motion": "horizontal" },
+    { "command": "view_zoom",  "keys": ["comma"], "motion": "vertical" },
+    
+    { "command": "color_pick", "keys": ["i"] },
+    { "command": "brush_soften", "keys": ["i"], "motion": "horizontal" },
+    { "command": "brush_resize", "keys": ["i"], "motion": "vertical" }
+  ],
+  
+  "brush":{
+    "size": 20.0,
+    "softness": 1.0,
+    "opacity": 1.0,
+    "color": [ 0.9, 0.2, 0.4, 1.0 ]
+  }
+}

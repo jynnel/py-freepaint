@@ -6,8 +6,7 @@ from OpenGL import GL
 from OpenGL.GL import shaders
 
 from modules.math import mat4_ortho, mat4_mul, mat4_identity, mat4_translate, mat4_print
-from modules.gltypes import Program, RenderTarget, DualFramebuffer
-from modules.types import RGBA
+from modules.gl.gltypes import Program, RenderTarget, DualFramebuffer
 
 DEFAULT_CANVAS = {
     "verts": [
@@ -47,15 +46,12 @@ class Renderer:
 
         self.ortho_matrix = mat4_ortho(self.window_size[0], self.window_size[1])
 
-        GL.glDisable( GL.GL_CULL_FACE )
         GL.glClearColor(0, 0, 0, 1)
 
         self.system_framebuffer_id = GL.glGetIntegerv( GL.GL_FRAMEBUFFER_BINDING )
 
-        self.draw_prog = Program("shaders/draw.vert", "shaders/draw.frag")
-        
         self.canvas_size = 512
-        self.canvas = DualFramebuffer(self.canvas_size, self.canvas_size, RGBA(0.5, 0.5, 0.5, 1.0), True)
+        self.canvas = DualFramebuffer(self.canvas_size, self.canvas_size, (0.5, 0.5, 0.5, 1.0), True)
 
         self.view = RenderTarget(
             {
@@ -67,14 +63,13 @@ class Renderer:
             }, {
                 "width": self.window_size[0],
                 "height": self.window_size[0],
-                "color": RGBA(0.4, 0.4, 0.4, 1),
+                "color": (0.4, 0.4, 0.4, 1),
                 "generate mipmaps": False
             }
         )
         self.view_transform = mat4_identity()
         hz = self.canvas_size * 0.5
         mat4_translate(self.view_transform, self.window_size[0] * 0.5 - hz, self.window_size[1] * 0.5 - hz, -0.5)
-        self.view_transform_screen = mat4_mul(self.view_transform, self.ortho_matrix)
 
         self.screen = RenderTarget(
             {
@@ -86,7 +81,7 @@ class Renderer:
             }, {
                 "width": self.window_size[0],
                 "height": self.window_size[1],
-                "color": RGBA(0.2, 0.2, 0.2, 1),
+                "color": (0.2, 0.2, 0.2, 1),
                 "generate mipmaps": False
             }
         )
@@ -95,7 +90,15 @@ class Renderer:
     def close(self):
         pass
 
+    def resize_window(self, window_size):
+        self.window_size = window_size
+        GL.glBindTexture( GL.GL_TEXTURE_2D, self.view.fb.texture.id )
+        GL.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_RGB16, self.window_size[0], self.window_size[1], 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, None)
+        self.ortho_matrix = mat4_ortho(self.window_size[0], self.window_size[1])
+
     def render(self):
+        self.view_transform_screen = mat4_mul(self.view_transform, self.ortho_matrix)
+        
         GL.glViewport(0, 0, self.window_size[0], self.window_size[1])
 
         self.view.render({
@@ -104,7 +107,7 @@ class Renderer:
         })
 
         self.screen.render({
-            "brushcolor": RGBA(1.0, 0.0, 0.0, 1.0).list(),
+            "brushcolor": (1.0, 0.0, 0.0, 1.0),
             "opacity": 0.8,
             "diam": 20.0,
             "mpos": (self.input_state.mpos[0] / self.window_size[0], self.input_state.mpos[1] / self.window_size[1]),

@@ -155,7 +155,7 @@ class Framebuffer:
             if status == FRAMEBUFFER_STATUS[s]:
                 self.status = s
 
-        GL.glClearColor( color.r, color.g, color.b, color.a )
+        GL.glClearColor( color[0], color[1], color[2], color[3] )
         GL.glClear( GL.GL_COLOR_BUFFER_BIT )
         
         self.id = fb_id
@@ -181,7 +181,7 @@ class RenderTarget:
 
         self.program.set_uniforms(uniforms)
 
-        GL.glClearColor( self.fb.color.r, self.fb.color.g, self.fb.color.b, self.fb.color.a )
+        GL.glClearColor( self.fb.color[0], self.fb.color[1], self.fb.color[2], self.fb.color[3] )
         GL.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT )
 
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )

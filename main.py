@@ -11,9 +11,9 @@ import sys
 from modules.sdlapp import SDLApp
 
 if sys.platform.startswith("linux"):
-    from modules.xdevices import Devices
+    from modules.devices.xdevices import Devices
 elif sys.platform.startswith("win32"):
-    from modules.windevices import Devices
+    from modules.devices.windevices import Devices
 
 FPS = 120.0
 FRAME_DELTA = 1000.0 / FPS
@@ -27,8 +27,9 @@ def main(argv):
 
     waitpoint = app.get_ticks() + FRAME_DELTA
     while app.running:
-        app.parse_events()
-        
+        app.update_input_state()
+        app.check_keybinds()
+
         if found_stylus:
             devices.update_devices()
             if devices.is_device_active("stylus"):
