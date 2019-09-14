@@ -2,13 +2,13 @@
 in vec2 uv;
 out vec4 color;
 
-uniform vec4 mixcolor;
+// uniform vec4 mixcolor;
 uniform vec4 brushcolor;
 uniform float softness;
 uniform float radius;
 uniform float pressure;
 uniform float opacity;
-uniform float mixamount;
+// uniform float mixamount;
 uniform vec2 mpos;
 
 uniform sampler2D basetexture;
@@ -31,8 +31,10 @@ void main() {
         mask = clamp( pow(1.0 - distance(uv*sz, mpos)/radius, softness), 0.0, 1.0 );
     }
     
+    float lod = sqrt(radius*0.25);
+    vec4 mixcolor = texture( basetexture, uv, lod );
     
     float opac = clamp( mask * opacity, 0.0, 1.0 );
-    color = mix( texcolor, mix( brushcolor, mixcolor, (mixamount)*(1.0-pressure) ), opac );
+    color = mix( texcolor, mix( brushcolor, mixcolor, (1.0-pressure) ), opac );
     // color = mix( texcolor, brushcolor, opac );
 }

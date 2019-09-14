@@ -102,7 +102,7 @@ class Renderer:
         GL.glViewport(0, 0, self.window_size[0], self.window_size[1])
 
         self.view.render({
-            "basetexture": self.canvas.fbs[1].texture if self.canvas.toggle else self.canvas.fbs[0].texture,
+            "basetexture": self.canvas.fbs[0].texture if self.canvas.toggle else self.canvas.fbs[1].texture,
             "transform": self.view_transform_screen
         })
 

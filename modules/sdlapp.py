@@ -13,7 +13,7 @@ elif platform.startswith("win32"):
 from modules.math import vec2f_mat4_mul_inverse
 from modules.gl.glrenderer import Renderer
 from modules.gl.gltypes import Program
-from modules.input.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustReleased
+from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustReleased
 from modules.operators import Operators
 from modules.settings import Settings
 from modules.brush import Brush
@@ -39,6 +39,8 @@ class SDLApp:
         if sdl2.SDL_Init(sdl2.SDL_INIT_VIDEO) != 0:
             print(sdl2.SDL_GetError())
         
+        width = self.settings.win_start_size[0]
+        height = self.settings.win_start_size[1]
         pos = sdl2.SDL_WINDOWPOS_UNDEFINED
         self.window = sdl2.SDL_CreateWindow(title.encode('ascii'), pos, pos, width, height, sdl2.SDL_WINDOW_OPENGL | sdl2.SDL_WINDOW_RESIZABLE )
         self.window_size = [0, 0]
@@ -113,23 +115,23 @@ class SDLApp:
                 self.input_state.stylus = None
         self.parse_events()
     
-    def check_keybinds(self):
+    def check_keybinds_and_run_operators(self):
         self.input_state.check_keybinds(self.settings.motion_deadzone)
         op = self.input_state.active_operator
 
         if op == "canvas_draw":
+            pressure = 1.0 if not self.input_state.stylus else self.input_state.stylus["Abs Pressure"]
+
             self.ops.draw(
                 self.renderer.canvas,
                 self.renderer.screen.vao,
                 self.draw_prog,
                 {
-                    "mixcolor": (0, 0, 0, 0),
                     "brushcolor": self.input_state.brush.color,
                     "softness": self.input_state.brush.softness,
                     "radius": self.input_state.brush.size * 0.5,
-                    "pressure": 1.0 if not self.input_state.stylus else self.input_state.stylus["Abs Pressure"],
+                    "pressure": pressure,
                     "opacity": self.input_state.brush.opacity,
-                    "mixamount": 0.0,
                     "mpos": self.input_state.mpos_w,
                 }
             )
@@ -140,10 +142,12 @@ class SDLApp:
             self.input_state.brush.size = max(self.input_state.brush.size + self.input_state.mdelta[self.input_state.active_axis], 1.0)
         elif op == "brush_soften":
             self.input_state.brush.showcolor = True
-            self.input_state.brush.softness = min(max(self.input_state.brush.softness - self.input_state.mdelta[self.input_state.active_axis] / 180.0, 0.0), 1.0)
+            self.input_state.brush.softness = min(max(self.input_state.brush.softness - self.input_state.mdelta[self.input_state.active_axis] / 180.0, 0.0), 0.95)
 
     def parse_events(self):
-        reset_mouse_state(self.input_state.mouse_state)
+        reset_key_state(self.input_state.mouse_state)
+        reset_key_state(self.input_state.mod_state)
+        reset_key_state(self.input_state.key_state)
         
         while sdl2.SDL_PollEvent(byref(self.event)) != 0:
             if self.event.type == sdl2.SDL_QUIT:
@@ -167,10 +171,10 @@ class SDLApp:
     def swap_window(self):
         sdl2.SDL_GL_SwapWindow(self.window)
 
-def reset_mouse_state(mouse_state):
-    for key in mouse_state:
-        if mouse_state[key] == KeyJustReleased:
-            mouse_state[key] = KeyNotPressed
+def reset_key_state(state):
+    for key in state:
+        if state[key] == KeyJustReleased:
+            state[key] = KeyNotPressed
 
 def update_mouse_state(mouse_state, ev):
     if ev.button.button == sdl2.SDL_BUTTON_LEFT:

@@ -165,6 +165,12 @@ class Framebuffer:
         self.color = color
         self.gen_mipmaps = gen_mipmaps
 
+        self.update_mipmaps()
+    
+    def update_mipmaps(self):
+        self.texture.use()
+        GL.glGenerateMipmap( GL.GL_TEXTURE_2D )
+
     def clear(self):
         GL.glBindFramebuffer( GL.GL_FRAMEBUFFER, self.id )
         GL.glClearColor( self.color[0], self.color[1], self.color[2], self.color[3] )
@@ -218,6 +224,11 @@ class DualFramebuffer:
         program.set_uniforms(uniforms)
 
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )
+
+        if fb.gen_mipmaps:
+            fb.update_mipmaps()
+
+        self.toggle = 0 if self.toggle else 1
     
     def clear(self):
         for fb in self.fbs:
