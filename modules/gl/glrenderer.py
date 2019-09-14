@@ -79,6 +79,7 @@ class Renderer:
                 "vertices": DEFAULT_SCREENQUAD["verts"],
                 "uvs": DEFAULT_SCREENQUAD["uvs"],
             }, {
+                "dummy": True,
                 "width": self.window_size[0],
                 "height": self.window_size[1],
                 "color": (0.2, 0.2, 0.2, 1),

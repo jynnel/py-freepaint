@@ -143,7 +143,16 @@ class Texture:
         GL.glBindTexture( GL.GL_TEXTURE_2D, self.id )
 
 class Framebuffer:
-    def __init__(self, width, height, color, gen_mipmaps):
+    def __init__(self, width, height, color, gen_mipmaps, dummy):
+        self.width = width
+        self.height = height
+        self.color = color
+        self.gen_mipmaps = gen_mipmaps
+
+        if dummy:
+            self.id = 0
+            return
+        
         self.texture = Texture(width, height, gen_mipmaps)
         
         fb_id = GL.glGenFramebuffers( 1 )
@@ -160,14 +169,11 @@ class Framebuffer:
         
         self.id = fb_id
         
-        self.width = width
-        self.height = height
-        self.color = color
-        self.gen_mipmaps = gen_mipmaps
-
-        self.update_mipmaps()
+        if gen_mipmaps:
+            self.update_mipmaps()
     
     def update_mipmaps(self):
+        self.use()
         self.texture.use()
         GL.glGenerateMipmap( GL.GL_TEXTURE_2D )
 
@@ -183,7 +189,9 @@ class RenderTarget:
     def __init__(self, prog_args, vao_args, fb_args):
         self.program = Program(prog_args["vertex shader path"], prog_args["fragment shader path"])
         self.vao = VertexArrayObject(self.program.id, vao_args["vertices"], vao_args["uvs"])
-        self.fb = Framebuffer(fb_args["width"], fb_args["height"], fb_args["color"], fb_args["generate mipmaps"])
+        if "dummy" not in fb_args:
+            fb_args["dummy"] = False
+        self.fb = Framebuffer(fb_args["width"], fb_args["height"], fb_args["color"], fb_args["generate mipmaps"], fb_args["dummy"])
     
     def render(self, uniforms):
         self.program.use()
@@ -203,8 +211,8 @@ class DualFramebuffer:
         self.size = [width, height]
 
         self.fbs = [
-            Framebuffer(width, height, color, gen_mipmaps),
-            Framebuffer(width, height, color, gen_mipmaps)
+            Framebuffer(width, height, color, gen_mipmaps, False),
+            Framebuffer(width, height, color, gen_mipmaps, False)
         ]
 
     def get_texture(self, i):

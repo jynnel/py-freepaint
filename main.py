@@ -21,9 +21,6 @@ def main(argv):
         app.update_input_state()
         app.check_keybinds_and_run_operators()
         
-        # if app.input_state.active_operator:
-        #     print(app.input_state.active_operator)
-
         app.renderer.render()
         app.swap_window()
 
