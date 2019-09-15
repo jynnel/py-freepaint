@@ -1,9 +1,9 @@
+from sys import exit
+
 from modules.settings import JsonLoadable
 from modules.brush import BrushSettings
 
-MposHistoryLength = 16
-DrawHistoryLength = 16
-PressureHistoryLength = 16
+InputHistoryLength = 4
 
 KeyJustReleased = -1
 KeyNotPressed = 0
@@ -17,16 +17,16 @@ class InputState:
         self.stylus = None
 
         self.mpos = (0, 0)
-        self.mpos_history = [(0,0), (0,0)]
+        self.mpos_history = []
         self.mpos_w = (0, 0)
-        self.mpos_w_history = [(0,0), (0,0)]
+        self.mpos_w_history = []
         self.mdelta = (0, 0)
         self.key_state = {}
         init_key_state(self.key_state)
 
-        self.pressure_history = []
-
-        self.draw_history = []
+        self.found_stylus = False
+        self.stylus_active = False
+        self.stylus_history = []
 
         self.mod_state = {
             "ctrl": KeyNotPressed,
@@ -53,29 +53,16 @@ class InputState:
     def add_keybind(self, keys, motion, operator, on):
         self.keybinds.append(KeyBind(keys, motion, operator, on))
 
-    def update_pressure_history(self, p):
-        self.pressure_history.append(p)
-        if len(self.pressure_history) > PressureHistoryLength:
-            self.pressure_history = self.pressure_history[-PressureHistoryLength::]
+    def update_input_history(self, history, val):
+        history.append(val)
 
-    def update_draw_history(self, xy):
-        self.draw_history.append(xy)
-        if len(self.draw_history) > DrawHistoryLength:
-            self.draw_history = self.draw_history[-DrawHistoryLength::]
+        hlen = len(history)
+        if hlen < InputHistoryLength:
+            history.extend(([val]*(InputHistoryLength-1)))
+        elif hlen > InputHistoryLength:
+            history.pop(0)
 
-    def update_mouse_position(self, x, y):
-        self.mpos = (x, y)
-        self.mdelta = (self.mpos[0] - self.mpos_history[-1][0], self.mpos[1] - self.mpos_history[-1][1])
-        self.mpos_history.append(self.mpos)
-        if len(self.mpos_history) > MposHistoryLength:
-            self.mpos_history = self.mpos_history[-MposHistoryLength::]
-    
-    def update_world_mouse_position(self, x, y):
-        self.mpos_w = (x, y)
-        self.mpos_w_history.append(self.mpos_w)
-        if len(self.mpos_w_history) > MposHistoryLength:
-            self.mpos_w_history = self.mpos_w_history[-MposHistoryLength::]
-    
+        
     def check_keybinds(self, deadzone):
         for bind in self.keybinds:
             if self.active_operator and self.active_operator != bind.operator:

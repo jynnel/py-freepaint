@@ -110,7 +110,7 @@ class Renderer:
         self.screen.render({
             "brushcolor": self.input_state.brush.color,
             "opacity": self.input_state.brush.opacity,
-            "diam": max(self.input_state.brush.size, 3.0),
+            "diam": max(self.input_state.brush.size, 2.0),
             "mpos": (self.input_state.mpos[0] / self.window_size[0], self.input_state.mpos[1] / self.window_size[1]),
             "winsize": (self.window_size[0], self.window_size[1]),
             "basetexture": self.view.fb.texture,

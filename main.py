@@ -24,7 +24,7 @@ def main(argv):
     while app.running:
         app.update_input_state()
         app.check_keybinds_and_run_operators()
-        
+
         app.renderer.render()
         app.swap_window()
 

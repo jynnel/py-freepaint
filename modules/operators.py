@@ -1,6 +1,6 @@
 from math import floor
 
-from modules.math import vec2f_dist
+from modules.math import vec2f_dist, vec2f_lerp
 
 class Operators:
     def __init__(self):
@@ -15,43 +15,35 @@ class Operators:
                 input_state.active_stroke = False
                 return
 
-            if input_state.stylus:
-                pressure = input_state.stylus["Abs Pressure"]
-            else:
-                print("no stylus pressure 1")
-                pressure = 1.0
-            
+            pressure = input_state.stylus["pressure"]
             radius = input_state.brush.size * 0.5
-
-            if input_state.draw_history:
-                if input_state.mpos_w == input_state.draw_history[-1]:
-                    return
-                cur_mpos = input_state.mpos_w
-                prev_mpos = input_state.draw_history[-1]
-                num = floor(vec2f_dist(cur_mpos, prev_mpos))
-
-                mpos_move = [(cur_mpos[0] - prev_mpos[0]) / num, (cur_mpos[1] - prev_mpos[1]) / num]
-
-                p_pressure = input_state.pressure_history[-1] if input_state.pressure_history else 1.0
-                pressure_change_increment = (pressure - p_pressure) / num
-            else:
-                prev_mpos = input_state.mpos_w
-                num = 0
-                mpos_move = [0, 0]
-                print("no history pressure 1")
-                p_pressure = 1.0
-                pressure_change_increment = 0.0
+            cur_mpos = input_state.mpos_w
+            prev_mpos = input_state.mpos_w_history[-2]
             
-            if not input_state.active_stroke:
-                num = 0
-                p_pressure = pressure
-                prev_mpos = input_state.mpos_w
+            if input_state.active_stroke and cur_mpos == prev_mpos:
+                return
             
-            opacity = input_state.brush.opacity / (radius if num else 1.0)
+            num = max(floor((vec2f_dist(cur_mpos, prev_mpos) + vec2f_dist(prev_mpos, input_state.mpos_w_history[-3])) / 2.0), 1)
 
-            for _ in range(num + 1):
+            p_pressure = input_state.stylus_history[-1]["pressure"] if input_state.stylus_history else pressure
+            pressure_change_increment = (pressure - p_pressure) / num
+            
+            opacity = input_state.brush.opacity / ( radius if num > 1 else 2.0 )
+            
+            mpw = input_state.mpos_w_history
+            begin = ((mpw[-3][0] + mpw[-2][0]) / 2.0, (mpw[-3][1] + mpw[-2][1]) / 2.0)
+            mid = mpw[-2]
+            end = ((mpw[-2][0] + mpw[-1][0]) / 2.0, (mpw[-2][1] + mpw[-1][1]) / 2.0)
+            
+            if input_state.active_stroke and num == 1:
+                num = 0
+
+            for i in range(num):
                 p_pressure += pressure_change_increment
-                prev_mpos = [prev_mpos[0] + mpos_move[0], prev_mpos[1] + mpos_move[1]]
+                
+                # TODO implement an actual curve algorithm
+                curve_t = float(i) / float(num)
+                curve_pos = vec2f_lerp( vec2f_lerp(begin, mid, curve_t), vec2f_lerp(mid, end, curve_t), curve_t )
 
                 self.canvas_draw(
                     renderer.canvas,
@@ -63,16 +55,13 @@ class Operators:
                         "radius": radius,
                         "pressure": p_pressure,
                         "opacity": opacity,
-                        "mpos": prev_mpos,
+                        "mpos": curve_pos,
                     }
                 )
             
-            input_state.update_draw_history(input_state.mpos_w)
-            if input_state.stylus:
-                input_state.update_pressure_history(pressure)
+            input_state.update_input_history(input_state.stylus_history, input_state.stylus)
             
-            if not input_state.active_stroke:
-                input_state.active_stroke = True
+            input_state.active_stroke = True
         
         elif op == "canvas_clear":
             self.canvas_clear(renderer.canvas)

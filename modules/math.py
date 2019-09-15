@@ -66,4 +66,7 @@ def vec2f_mat4_mul_inverse( m, v ):
     return (x, y)
 
 def vec2f_dist( a, b ):
-    return sqrt(pow(a[0] - b[0], 2) + pow(a[1] - b[1], 2));
+    return sqrt(pow(a[0] - b[0], 2) + pow(a[1] - b[1], 2))
+
+def vec2f_lerp( a, b, t ):
+    return ( a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)

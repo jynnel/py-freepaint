@@ -20,9 +20,6 @@ from modules.brush import BrushSettings
 
 class SDLApp:
     def __init__(self, title, width, height):
-        self.devices = Devices()
-        self.found_stylus = self.devices.add_device("stylus")
-
         self.settings = Settings()
         self.ops = Operators()
 
@@ -73,6 +70,9 @@ class SDLApp:
         if "brush" in json:
             self.input_state.brush.from_json(json["brush"])
 
+        self.devices = Devices()
+        self.input_state.found_stylus = self.devices.add_device("stylus")
+
         self.update_window_size()
         self.renderer = Renderer(self.context, self.window_size, self.input_state)
 
@@ -104,9 +104,10 @@ class SDLApp:
         sdl2.SDL_Delay(int(ticks))
 
     def update_input_state(self):
-        if self.found_stylus:
+        if self.input_state.found_stylus:
             self.devices.update_devices()
             self.input_state.stylus = self.devices.get_device_values("stylus")
+            self.input_state.stylus_active = self.devices.is_device_active("stylus")
         self.parse_events()
     
     def check_keybinds_and_run_operators(self):
@@ -145,8 +146,14 @@ class SDLApp:
         sdl2.SDL_GetMouseState(byref(m_x), byref(m_y))
         x = m_x.value
         y = self.window_size[1] - m_y.value
-        self.input_state.update_mouse_position(x, y)
-        self.input_state.update_world_mouse_position(*vec2f_mat4_mul_inverse( self.renderer.view_transform, (x, y)))
+
+        self.input_state.mpos = (x, y)
+        self.input_state.update_input_history(self.input_state.mpos_history, self.input_state.mpos)
+        self.input_state.mdelta = (self.input_state.mpos[0] - self.input_state.mpos_history[-2][0], self.input_state.mpos[1] - self.input_state.mpos_history[-2][1])
+        
+        self.input_state.mpos_w = vec2f_mat4_mul_inverse( self.renderer.view_transform, (x, y) )
+        self.input_state.update_input_history(self.input_state.mpos_w_history, self.input_state.mpos_w)
+
 
     def swap_window(self):
         sdl2.SDL_GL_SwapWindow(self.window)
