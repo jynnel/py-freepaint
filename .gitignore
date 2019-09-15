@@ -1,4 +1,5 @@
 __pycache__/
+build/*
 python3.7.trace
 apitrace/*
 settings.json

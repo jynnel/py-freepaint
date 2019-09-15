@@ -7,6 +7,10 @@ Required libs:
 '''
 
 import sys
+import os
+
+dname = os.path.abspath(os.path.dirname(sys.argv[0]))
+os.chdir(dname)
 
 from modules.sdlapp import SDLApp
 
