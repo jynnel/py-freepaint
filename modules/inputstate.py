@@ -1,6 +1,9 @@
 from modules.settings import JsonLoadable
+from modules.brush import BrushSettings
 
 MposHistoryLength = 16
+DrawHistoryLength = 16
+PressureHistoryLength = 16
 
 KeyJustReleased = -1
 KeyNotPressed = 0
@@ -21,6 +24,10 @@ class InputState:
         self.key_state = {}
         init_key_state(self.key_state)
 
+        self.pressure_history = []
+
+        self.draw_history = []
+
         self.mod_state = {
             "ctrl": KeyNotPressed,
             "shift": KeyNotPressed,
@@ -37,10 +44,24 @@ class InputState:
 
         self.keybinds = []
         self.active_operator = ""
+        self.previous_operator = ""
         self.active_axis = AxisHorizontal
+        
+        self.brush = BrushSettings()
+        self.active_stroke = False
 
     def add_keybind(self, keys, motion, operator, on):
         self.keybinds.append(KeyBind(keys, motion, operator, on))
+
+    def update_pressure_history(self, p):
+        self.pressure_history.append(p)
+        if len(self.pressure_history) > PressureHistoryLength:
+            self.pressure_history = self.pressure_history[-PressureHistoryLength::]
+
+    def update_draw_history(self, xy):
+        self.draw_history.append(xy)
+        if len(self.draw_history) > DrawHistoryLength:
+            self.draw_history = self.draw_history[-DrawHistoryLength::]
 
     def update_mouse_position(self, x, y):
         self.mpos = (x, y)
@@ -94,15 +115,6 @@ class InputState:
             else:
                 self.active_operator = ""
                 bind.md_accum = [0, 0]
-
-class Brush(JsonLoadable):
-    def __init__(self):
-        self.size = 20.0
-        self.softness = 1.0
-        self.opacity = 1.0
-        self.color = [ 0.9, 0.2, 0.4, 1.0 ]
-        self.showcolor = False
-        self.mixamt = 0.0
 
 class KeyBind:
     def __init__(self, keys, motion, operator, on):

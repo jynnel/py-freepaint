@@ -1,3 +1,5 @@
+from math import sqrt
+
 import numpy
 
 def mat4_ortho(width, height):
@@ -62,3 +64,6 @@ def vec2f_mat4_mul_inverse( m, v ):
     x = (icf00*v[0] + icf10*v[1]) - (icf00*m[3][0] + icf10*m[3][1])
     y = (icf01*v[0] + icf11*v[1]) - (icf01*m[3][0] + icf11*m[3][1])
     return (x, y)
+
+def vec2f_dist( a, b ):
+    return sqrt(pow(a[0] - b[0], 2) + pow(a[1] - b[1], 2));
