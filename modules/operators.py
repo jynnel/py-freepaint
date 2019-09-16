@@ -20,11 +20,11 @@ class Operators:
     def __init__(self):
         pass
     
-    def do(self, op, finish, renderer, input_state):
-        if not op:
+    def do(self, bind, finish, renderer, input_state):
+        if not bind:
             return
         
-        elif op == "canvas_draw":
+        elif bind.operator == "canvas_draw":
             if finish:
                 input_state.draw_history = []
                 input_state.active_stroke = False
@@ -89,10 +89,10 @@ class Operators:
             
             input_state.active_stroke = True
         
-        elif op == "canvas_clear":
+        elif bind.operator == "canvas_clear":
             renderer.canvas.clear()
         
-        elif op == "brush_resize":
+        elif bind.operator == "brush_resize":
             brush = input_state.brush
             
             if finish:
@@ -103,7 +103,7 @@ class Operators:
             amount = (input_state.mdelta[input_state.active_axis] * 1.5) / renderer.view_scale_amount
             brush.size = max(brush.size + amount, 1.0)
         
-        elif op == "brush_soften":
+        elif bind.operator == "brush_soften":
             brush = input_state.brush
 
             if finish:
@@ -114,51 +114,51 @@ class Operators:
             amount = input_state.mdelta[input_state.active_axis] / 180.0
             brush.softness = min(max(brush.softness - amount, 0.0), 1.0)
         
-        elif op == "view_pan":
+        elif bind.operator == "view_pan":
             xy = input_state.mdelta
             renderer.view_translate(xy[0], xy[1])
         
-        elif op == "view_rot":
+        elif bind.operator == "view_rot":
             angle = input_state.mdelta[input_state.active_axis] * -0.005
             xy = input_state.operator_start_mpos
             renderer.view_rotate_at_point(xy[0], xy[1], angle)
 
-        elif op == "view_zoom":
+        elif bind.operator == "view_zoom":
             scale = 1.0 + (input_state.mdelta[input_state.active_axis] * -0.01)
             xy = input_state.operator_start_mpos
             renderer.view_scale_at_point(xy[0], xy[1], scale)
 
-        elif op == "color_pick":
+        elif bind.operator == "color_pick":
             if finish:
                 return
             xy = input_state.mpos
             input_state.brush.color = renderer.screen.read_pixel(xy[0], xy[1])
 
-        elif op == "view_reset":
+        elif bind.operator == "view_reset":
             if finish:
                 return
             
             renderer.view_reset()
 
-        elif op == "view_flip":
+        elif bind.operator == "view_flip":
             if finish:
                 return
             
             x = input_state.mpos[0]
             renderer.view_flip_at_point(x)
         
-        elif op == "set_brush":
+        elif bind.operator == "set_brush":
             if finish:
                 return
             
-            name = input_state.operator_set_value
+            name = input_state.active_bind.to
             if name in input_state.brush.progs:
                 print(f"Set brush: {name}")
                 input_state.brush.current_prog = name
             else:
                 print(f"Unknown brush: {name}")
         
-        elif op == "swap_color":
+        elif bind.operator == "swap_color":
             if finish:
                 return
             

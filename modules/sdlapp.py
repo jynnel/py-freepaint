@@ -116,19 +116,19 @@ class SDLApp:
         self.parse_events()
     
     def check_keybinds_and_run_operators(self):
-        self.input_state.previous_operator = self.input_state.active_operator
+        self.input_state.previous_bind = self.input_state.active_bind
         self.input_state.check_keybinds(self.settings.motion_deadzone)
         
         finish = False
-        if self.input_state.active_operator == "" and self.input_state.previous_operator:
+        if self.input_state.active_bind == None and self.input_state.previous_bind:
             finish = True
-            self.input_state.active_operator = self.input_state.previous_operator
+            self.input_state.active_bind = self.input_state.previous_bind
         
-        if self.input_state.active_operator:
-            self.ops.do(self.input_state.active_operator, finish, self.renderer, self.input_state)
+        if self.input_state.active_bind:
+            self.ops.do(self.input_state.active_bind, finish, self.renderer, self.input_state)
         
         if finish:
-            self.input_state.active_operator = ""
+            self.input_state.active_bind = None
 
     def parse_events(self):
         reset_key_state(self.input_state.mouse_state)

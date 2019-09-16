@@ -43,8 +43,8 @@ class InputState:
         }
 
         self.keybinds = []
-        self.active_operator = ""
-        self.previous_operator = ""
+        self.active_bind = None
+        self.previous_bind = None
         self.active_axis = AxisHorizontal
         self.operator_start_mpos = (0, 0)
         self.operator_set_value = ""
@@ -66,7 +66,7 @@ class InputState:
 
     def check_keybinds(self, deadzone):
         for bind in self.keybinds:
-            if self.active_operator and self.active_operator != bind.operator:
+            if self.active_bind and self.active_bind != bind:
                 continue
 
             key_check = True
@@ -87,27 +87,19 @@ class InputState:
                     bind.md_accum[1] += self.mdelta[1]
                     absx = abs(bind.md_accum[0])
                     absy = abs(bind.md_accum[1])
-                    if not self.active_operator:
+                    if not self.active_bind:
                         if bind.motion.startswith("h") and (absx > deadzone and absx > absy):
                             self.operator_start_mpos = self.mpos
                             self.active_axis = AxisHorizontal
-                            self.active_operator = bind.operator
-                            self.operator_set_value = bind.to
-                            return
+                            self.active_bind = bind
                         elif bind.motion.startswith("v") and (absy > deadzone and absy > absx):
                             self.operator_start_mpos = self.mpos
                             self.active_axis = AxisVertical
-                            self.active_operator = bind.operator
-                            self.operator_set_value = bind.to
-                            return
-                    else:
-                        return
+                            self.active_bind = bind
                 else:
-                    self.active_operator = bind.operator
-                    self.operator_set_value = bind.to
-                    return
+                    self.active_bind = bind
             else:
-                self.active_operator = ""
+                self.active_bind = None
                 bind.md_accum = [0, 0]
 
 class KeyBind:

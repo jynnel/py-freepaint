@@ -248,3 +248,4 @@ class DualFramebuffer:
     def clear(self):
         for fb in self.fbs:
             fb.clear()
+            fb.update_mipmaps()
