@@ -4,7 +4,7 @@ LINUXDIR="bin/py-freepaint-linux"
 EXENAME="py-freepaint"
 
 mkdir -p ./$BUILDDIR/$LINUXDIR
-rsync -rupE default_settings.json shaders ./$BUILDDIR/$LINUXDIR
+rsync -rupE default_settings.json settings.json shaders ./$BUILDDIR/$LINUXDIR
 python ./codegen/build-single-source-file.py -i ./main.py -o ./build/main.pyx -p linux
 
 cd ./$BUILDDIR

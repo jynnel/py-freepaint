@@ -52,7 +52,7 @@ class Renderer:
 
         self.system_framebuffer_id = GL.glGetIntegerv( GL.GL_FRAMEBUFFER_BINDING )
 
-        self.canvas_size = 512
+        self.canvas_size = 1024
         self.canvas = DualFramebuffer(self.canvas_size, self.canvas_size, (0.5, 0.5, 0.5, 1.0), True)
 
         self.view = RenderTarget(
@@ -124,6 +124,7 @@ class Renderer:
         self.screen.fb.height = window_size[1]
         self.view.fb.width = window_size[0]
         self.view.fb.height = window_size[1]
+        self.view_reset()
 
     def render(self):
         self.view_transform_screen = mat4_mul(self.view_transform, self.ortho_matrix)

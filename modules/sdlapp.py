@@ -17,8 +17,13 @@ from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustRel
 from modules.operators import Operators
 from modules.settings import Settings
 
+SM0 = 0.85
+SM1 = (1.0 - SM0)*SM0
+SM2 = (1.0 - SM0)*(1.0 - SM0)
+
 class SDLApp:
     def __init__(self, title, width, height):
+        self.paused = False
         self.settings = Settings()
         self.ops = Operators()
 
@@ -40,7 +45,7 @@ class SDLApp:
         v.SDL_GL_SetAttribute( v.SDL_GL_MULTISAMPLESAMPLES, 2 )
 
         v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
-        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MINOR_VERSION, 2)
+        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MINOR_VERSION, 3)
         v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_PROFILE_MASK, v.SDL_GL_CONTEXT_PROFILE_CORE)
 
         width = self.settings.win_start_size[0]
@@ -141,6 +146,10 @@ class SDLApp:
             elif self.event.type == sdl2.SDL_WINDOWEVENT and self.event.window.windowID == self.windowID:
                 if self.event.window.event == sdl2.SDL_WINDOWEVENT_SIZE_CHANGED:
                     self.resize_window()
+                elif self.event.window.event == sdl2.SDL_WINDOWEVENT_ENTER:
+                    self.paused = False
+                elif self.event.window.event == sdl2.SDL_WINDOWEVENT_LEAVE:
+                    self.paused = True
             elif self.event.type in (sdl2.SDL_KEYDOWN, sdl2.SDL_KEYUP):
                 update_key_state(self.input_state.key_state, self.input_state.mod_state, self.event.key)
             elif self.event.type in (sdl2.SDL_MOUSEBUTTONDOWN, sdl2.SDL_MOUSEBUTTONUP):
@@ -151,6 +160,13 @@ class SDLApp:
         sdl2.SDL_GetMouseState(byref(m_x), byref(m_y))
         x = m_x.value
         y = self.window_size[1] - m_y.value
+
+        if len(self.input_state.mpos_history) >= 2:
+            c = (x, y)
+            p = self.input_state.mpos_history[-1]
+            pp = self.input_state.mpos_history[-2]
+            x = c[0]*SM0 + p[0]*SM1 + pp[0]*SM2
+            y = c[1]*SM0 + p[1]*SM1 + pp[1]*SM2
 
         if (x, y) != self.input_state.mpos_history[-1]:
             self.input_state.update_input_history(self.input_state.mpos_history, self.input_state.mpos)

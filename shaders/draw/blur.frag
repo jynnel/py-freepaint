@@ -5,11 +5,13 @@ out vec4 color;
 uniform float opacity;
 uniform float radius;
 uniform vec2 mpos;
+uniform float px;
+uniform float sz;
 
 uniform sampler2D basetexture;
 
-#define sz 512.0
-#define px 1.0/sz
+// #define sz 512.0
+// #define px 1.0/sz
 
 vec4 blurcolor() {
     float pd = px*(radius / ((1.0-opacity) * radius * (1.0-(radius/220.f))));

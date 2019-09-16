@@ -59,7 +59,7 @@ class Operators:
                 return
 
             t = 0.0
-            t_inc = 0.001
+            t_inc = 0.005
             while t < 1.0:
                 t += t_inc
                 xy = spline_4p(t, p0, p1, p2, p3)
@@ -82,6 +82,8 @@ class Operators:
                         "opacity": opacity,
                         "mpos": xy,
                         "motion": motion,
+                        "px": 1.0 / renderer.canvas.fbs[0].width,
+                        "sz": renderer.canvas.fbs[0].width
                     }
                 )
                 input_state.update_input_history(input_state.draw_history, xy)

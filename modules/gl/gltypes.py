@@ -226,6 +226,9 @@ class DualFramebuffer:
         return self.fbs[i].texture.id
     
     def render(self, vao, program, uniforms):
+        if not "radius" in uniforms or not "mpos" in uniforms:
+            return
+        
         program.use()
         vao.use()
         
@@ -238,7 +241,28 @@ class DualFramebuffer:
         
         program.set_uniforms(uniforms)
 
+        radplus = uniforms["radius"] + 1.0
+        diaplus = uniforms["radius"]*2.0 + 4.0
+        
+        # lower-left corner of dab rect
+        scpos = (uniforms["mpos"][0] - radplus, uniforms["mpos"][1] - radplus)
+        
+        if scpos[0] >= fb.width or scpos[1] >= fb.height:
+            return
+        
+        scisx = min( max( 0.0, scpos[0] ), fb.width )
+        scisy = min( max( 0.0, scpos[1] ), fb.height )
+        scisw = ( diaplus if scpos[0] > 0.0 else diaplus + scpos[0] ) if scisx+diaplus < fb.width else fb.width + 0.999 - scisx
+        scish = ( diaplus if scpos[1] > 0.0 else diaplus + scpos[1] ) if scisy+diaplus < fb.height else fb.height + 0.999 - scisy
+        if scisw < 0.0 or scish < 0.0:
+            return
+        
+        GL.glScissor( GL.GLint(int(scisx)), GL.GLint(int(scisy)), GL.GLsizei(int(scisw)), GL.GLsizei(int(scish)) )
+        GL.glEnable( GL.GL_SCISSOR_TEST )
+
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )
+
+        GL.glDisable( GL.GL_SCISSOR_TEST )
 
         if fb.gen_mipmaps:
             fb.update_mipmaps()

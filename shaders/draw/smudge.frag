@@ -6,12 +6,14 @@ uniform float radius;
 uniform float pressure;
 uniform vec2 mpos;
 uniform vec2 motion;
+uniform float sz;
+uniform float px;
 
 uniform sampler2D basetexture;
 
 #define PI 3.1415926535897932384626433832795
-#define sz 512.0
-#define px 1.0/sz
+// #define sz 512.0
+// #define px 1.0/sz
 
 void main() {
     vec4 texcolor = texture( basetexture, uv );
