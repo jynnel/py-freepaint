@@ -68,14 +68,7 @@ class SDLApp:
         self.input_state = InputState()
         if "bindings" in json:
             for binding in json["bindings"]:
-                if not "motion" in binding:
-                    binding["motion"] = "none"
-                if not "on" in binding:
-                    binding["on"] = "press"
-                if not "to" in binding:
-                    binding["to"] = ""
-                self.input_state.add_keybind(binding["keys"], binding["motion"], binding["command"], \
-                    KeyJustReleased if binding["on"] == "release" else KeyPressed, binding["to"])
+                self.input_state.add_keybind(binding)
         if "brush" in json:
             self.input_state.brush.from_json(json["brush"])
 

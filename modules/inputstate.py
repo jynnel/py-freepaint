@@ -11,6 +11,8 @@ KeyPressed = 1
 AxisHorizontal = 0
 AxisVertical = 1
 
+ReleaseCommands = ("view_flip", "color_pick", "swap_color")
+
 class InputState:
     def __init__(self):
         self.stylus = None
@@ -52,7 +54,26 @@ class InputState:
         self.brush = BrushSettings()
         self.active_stroke = False
 
-    def add_keybind(self, keys, motion, operator, on, to):
+    def add_keybind(self, binding):
+        if not "keys" in binding or not "command" in binding:
+            return
+        
+        if not "motion" in binding:
+            binding["motion"] = "none"
+        if not "on" in binding:
+            if binding["command"] in ReleaseCommands:
+                binding["on"] = "release"
+            else:
+                binding["on"] = "press"
+        if not "to" in binding:
+            binding["to"] = ""
+        
+        keys = binding["keys"]
+        motion = binding["motion"]
+        operator = binding["command"]
+        on = KeyJustReleased if binding["on"] == "release" else KeyPressed
+        to = binding["to"]
+        
         self.keybinds.append(KeyBind(keys, motion, operator, on, to))
 
     def update_input_history(self, history, val):

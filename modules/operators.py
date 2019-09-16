@@ -43,7 +43,7 @@ class Operators:
             p2 = array(mpw[-1], dtype="float32")
             p3 = array(cur_mpos, dtype="float32")
 
-            spacing = max(input_state.brush.size / 128.0, 1.0)
+            spacing = max(input_state.brush.size / 60.0, 1.0)
 
             radius = input_state.brush.size * 0.5
             pressure = input_state.stylus["pressure"]
@@ -54,7 +54,7 @@ class Operators:
             motion = ( -0.5 * delta[0], -0.5 * delta[1] )
             
             pos_p = input_state.draw_history[-1] if input_state.active_stroke and input_state.draw_history else cur_mpos
-            
+
             if input_state.active_stroke and p3[0] == p2[0] and p3[1] == p2[1]:
                 return
 
@@ -65,7 +65,7 @@ class Operators:
                 xy = spline_4p(t, p0, p1, p2, p3)
 
                 dist = min(vec2f_dist( xy, pos_p ), spacing)
-                if dist < spacing:
+                if input_state.active_stroke and dist < spacing:
                     continue
                 
                 opacity = opacity_start * dist
@@ -166,8 +166,6 @@ class Operators:
             
             brush = input_state.brush
 
-            print("swapping colors")
             temp = deepcopy(brush.color)
             brush.color = brush.color2
             brush.color2 = temp
-            print(brush.color)

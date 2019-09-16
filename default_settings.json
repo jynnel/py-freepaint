@@ -16,8 +16,6 @@
   },
   
   "bindings":[
-    { "command": "toggle_debug", "keys": ["backquote"] },
-    
     { "command": "canvas_draw", "keys": ["mouse_left"] },
     { "command": "canvas_clear", "keys": ["delete"] },
     
@@ -28,30 +26,23 @@
     { "command": "color_pick", "keys": ["mouse_right"], "on": "release" },
     { "command": "brush_soften", "keys": ["mouse_right"], "motion": "horizontal" },
     { "command": "brush_resize", "keys": ["mouse_right"], "motion": "vertical" },
+
+    { "command": "set_brush", "keys": ["d"], "to": "draw" },
+    { "command": "set_brush", "keys": ["b"], "to": "blur" },
+    { "command": "set_brush", "keys": ["s"], "to": "smudge" },    
     
-    { "command": "view_pan",   "keys": ["kp_enter","mouse_middle"] },
-    { "command": "view_reset", "keys": ["kp_period"] },
-    { "command": "view_flip",  "keys": ["kp_5"], "on": "release" },
+    { "command": "view_reset", "keys": ["z"] },
+    { "command": "view_flip",  "keys": ["f"], "on": "release" },
     
-    { "command": "canvas_draw", "keys": ["u"] },
-    { "command": "view_reset", "keys": ["semicolon"] },
-    { "command": "view_flip",  "keys": ["k"], "on": "release" },
-    { "command": "canvas_clear", "keys": ["x"] },
-    
-    { "command": "view_pan",   "keys": ["quote"] },
-    { "command": "view_rot",   "keys": ["comma"], "motion": "horizontal" },
-    { "command": "view_zoom",  "keys": ["comma"], "motion": "vertical" },
+    { "command": "view_pan",   "keys": ["q"] },
+    { "command": "view_rot",   "keys": ["w"], "motion": "horizontal" },
+    { "command": "view_zoom",  "keys": ["w"], "motion": "vertical" },
     
     { "command": "color_pick", "keys": ["i"] },
     { "command": "brush_soften", "keys": ["i"], "motion": "horizontal" },
     { "command": "brush_resize", "keys": ["i"], "motion": "vertical" },
 
-    { "command": "set_brush", "keys": ["kp_4"], "to": "draw" },
-    { "command": "set_brush", "keys": ["kp_8"], "to": "blur" },
-    { "command": "set_brush", "keys": ["kp_3"], "to": "smudge" },
-
-    { "command": "swap_color", "keys": ["kp_1"], "on": "release" },
-    { "command": "swap_color", "keys": ["q"], "on": "release" }
+    { "command": "swap_color", "keys": ["x"], "on": "release" }
   ],
   
   "brush":{
