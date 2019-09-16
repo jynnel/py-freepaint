@@ -1,6 +1,20 @@
+from copy import deepcopy
 from math import floor
 
+from numpy import array
+
 from modules.math import vec2f_dist, vec2f_lerp
+
+def spline_4p( t, p_1, p0, p1, p2 ):
+    """ Catmull-Rom
+        (Ps can be numpy vectors or arrays too: colors, curves ...)
+        from https://stackoverflow.com/a/1295081
+    """
+    return (
+          t*((2.0-t)*t - 1.0)   * p_1
+        + (t*t*(3.0*t - 5.0) + 2.0) * p0
+        + t*((4.0 - 3.0*t)*t + 1.0) * p1
+        + (t-1.0)*t*t         * p2 ) / 2.0
 
 class Operators:
     def __init__(self):
@@ -20,46 +34,44 @@ class Operators:
             cur_mpos = input_state.mpos_w
 
             if not input_state.active_stroke:
+                mpw[-3] = cur_mpos
                 mpw[-2] = cur_mpos
                 mpw[-1] = cur_mpos
             
-            begin = ((mpw[-2][0] + mpw[-1][0]) / 2.0, (mpw[-2][1] + mpw[-1][1]) / 2.0)
-            mid = mpw[-1]
-            end = ((mpw[-1][0] + cur_mpos[0]) / 2.0, (mpw[-1][1] + cur_mpos[1]) / 2.0)
+            p0 = array(mpw[-3], dtype="float32")
+            p1 = array(mpw[-2], dtype="float32")
+            p2 = array(mpw[-1], dtype="float32")
+            p3 = array(cur_mpos, dtype="float32")
 
-            num = max(floor((vec2f_dist(end, mid) + vec2f_dist(mid, begin)) / 2.0), 1)
+            spacing = max(input_state.brush.size / 128.0, 1.0)
 
-            pressure = input_state.stylus["pressure"]
             radius = input_state.brush.size * 0.5
-
+            pressure = input_state.stylus["pressure"]
             p_pressure = input_state.stylus_history[-1]["pressure"] if input_state.stylus_history else pressure
-            pressure_change_increment = (pressure - p_pressure) / num
+            opacity_start = input_state.brush.opacity / radius
             
-            opacity = input_state.brush.opacity / ( radius if num > 1 else 2.0 )
-
-            if num == 1:
-                delta = (0, 0)
-            else:
-                delta = ((cur_mpos[0] - mpw[-1][0]) / num, (cur_mpos[1] - mpw[-1][1]) / num)
+            delta = ((cur_mpos[0] - mpw[-1][0]), (cur_mpos[1] - mpw[-1][1]))
+            motion = ( -0.5 * delta[0], -0.5 * delta[1] )
             
-            motion = ( -1.0 * delta[0], -1.0 * delta[1] )
+            pos_p = input_state.draw_history[-1] if input_state.active_stroke and input_state.draw_history else cur_mpos
             
-            if input_state.active_stroke and mid == end:
+            if input_state.active_stroke and p3[0] == p2[0] and p3[1] == p2[1]:
                 return
-            
-            if input_state.active_stroke and num == 1:
-                num = 0
 
-            for i in range(num):
-                p_pressure += pressure_change_increment
+            t = 0.0
+            t_inc = 0.001
+            while t < 1.0:
+                t += t_inc
+                xy = spline_4p(t, p0, p1, p2, p3)
+
+                dist = min(vec2f_dist( xy, pos_p ), spacing)
+                if dist < spacing:
+                    continue
                 
-                # BUG sometimes it doesn't catch up or has bad spacing (two points equal)
-                # TODO implement an actual curve algorithm
-                curve_t = float(i) / float(num)
-                curve_pos = vec2f_lerp( vec2f_lerp(begin, mid, curve_t), vec2f_lerp(mid, end, curve_t), curve_t )
+                opacity = opacity_start * dist
+                pos_p = xy
 
-                self.canvas_draw(
-                    renderer.canvas,
+                renderer.canvas.render(
                     renderer.screen.vao,
                     input_state.brush.progs[input_state.brush.current_prog],
                     {
@@ -68,25 +80,39 @@ class Operators:
                         "radius": radius,
                         "pressure": p_pressure,
                         "opacity": opacity,
-                        "mpos": curve_pos,
+                        "mpos": xy,
                         "motion": motion,
                     }
                 )
-                input_state.update_input_history(input_state.draw_history, curve_pos)
+                input_state.update_input_history(input_state.draw_history, xy)
                 input_state.update_input_history(input_state.stylus_history, input_state.stylus)
             
             input_state.active_stroke = True
         
         elif op == "canvas_clear":
-            self.canvas_clear(renderer.canvas)
+            renderer.canvas.clear()
         
         elif op == "brush_resize":
+            brush = input_state.brush
+            
+            if finish:
+                brush.showcolor = False
+                return
+
+            brush.showcolor = True
             amount = input_state.mdelta[input_state.active_axis] * 1.5
-            self.brush_resize(input_state.brush, amount)
+            brush.size = max(brush.size + amount, 1.0)
         
         elif op == "brush_soften":
+            brush = input_state.brush
+
+            if finish:
+                brush.showcolor = False
+                return
+            
+            brush.showcolor = True
             amount = input_state.mdelta[input_state.active_axis] / 180.0
-            self.brush_soften(input_state.brush, amount)
+            brush.softness = min(max(brush.softness - amount, 0.0), 1.0)
         
         elif op == "view_pan":
             xy = input_state.mdelta
@@ -122,18 +148,3 @@ class Operators:
                 input_state.brush.current_prog = name
             else:
                 print(f"Unknown brush: {name}")
-
-    def canvas_draw(self, canvas, vao, program, uniforms):
-        canvas.render(vao, program, uniforms)
-    
-    def canvas_clear(self, canvas):
-        canvas.clear()
-    
-    def brush_resize(self, brush, amount):
-        brush.showcolor = True
-        brush.size = max(brush.size + amount, 1.0)
-    
-    def brush_soften(self, brush, amount):
-        brush.showcolor = True
-        brush.softness = min(max(brush.softness - amount, 0.0), 1.0)
-    

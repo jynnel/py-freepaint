@@ -1,7 +1,6 @@
 from copy import deepcopy
 
-from modules.settings import JsonLoadable
-from modules.brush import BrushSettings
+from modules.settings import JsonLoadable, BrushSettings
 
 InputHistoryLength = 4
 

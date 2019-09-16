@@ -16,7 +16,6 @@ from modules.gl.gltypes import Program
 from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustReleased
 from modules.operators import Operators
 from modules.settings import Settings
-from modules.brush import BrushSettings
 
 class SDLApp:
     def __init__(self, title, width, height):
