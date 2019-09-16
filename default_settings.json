@@ -31,11 +31,11 @@
     
     { "command": "view_pan",   "keys": ["kp_enter","mouse_middle"] },
     { "command": "view_reset", "keys": ["kp_period"] },
-    { "command": "view_flip",  "keys": ["kp_5"] },
+    { "command": "view_flip",  "keys": ["kp_5"], "on": "release" },
     
     { "command": "canvas_draw", "keys": ["u"] },
     { "command": "view_reset", "keys": ["semicolon"] },
-    { "command": "view_flip",  "keys": ["k"] },
+    { "command": "view_flip",  "keys": ["k"], "on": "release" },
     { "command": "canvas_clear", "keys": ["x"] },
     
     { "command": "view_pan",   "keys": ["quote"] },
@@ -44,13 +44,23 @@
     
     { "command": "color_pick", "keys": ["i"] },
     { "command": "brush_soften", "keys": ["i"], "motion": "horizontal" },
-    { "command": "brush_resize", "keys": ["i"], "motion": "vertical" }
+    { "command": "brush_resize", "keys": ["i"], "motion": "vertical" },
+
+    { "command": "set_brush", "keys": ["kp_4"], "to": "draw" },
+    { "command": "set_brush", "keys": ["kp_8"], "to": "blur" },
+    { "command": "set_brush", "keys": ["kp_3"], "to": "smudge" },
+
+    { "command": "swap_color", "keys": ["kp_1"], "on": "release" },
+    { "command": "swap_color", "keys": ["q"], "on": "release" }
   ],
   
   "brush":{
     "size": 20.0,
     "softness": 1.0,
     "opacity": 1.0,
-    "color": [ 0.9, 0.2, 0.4, 1.0 ]
+    "color": [ 0.9, 0.6, 0.8, 1.0 ],
+    "color2": [ 0.1, 0.3, 0.4, 1.0 ],
+    "mixamt": 0.0,
+    "showcolor":false
   }
 }

@@ -100,7 +100,7 @@ class Operators:
                 return
 
             brush.showcolor = True
-            amount = input_state.mdelta[input_state.active_axis] * 1.5
+            amount = (input_state.mdelta[input_state.active_axis] * 1.5) / renderer.view_scale_amount
             brush.size = max(brush.size + amount, 1.0)
         
         elif op == "brush_soften":

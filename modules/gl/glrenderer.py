@@ -1,3 +1,4 @@
+from math import sqrt
 from ctypes import c_int
 
 import OpenGL
@@ -69,6 +70,7 @@ class Renderer:
             }
         )
         self.view_transform = mat4_identity()
+        self.view_scale_amount = 1.0
         self.view_reset()
 
         self.screen = RenderTarget(
@@ -93,6 +95,7 @@ class Renderer:
         self.view_transform = mat4_identity()
         hz = self.canvas_size * 0.5
         mat4_translate(self.view_transform, self.window_size[0] * 0.5 - hz, self.window_size[1] * 0.5 - hz, 0)
+        self.view_scale_amount = 1.0
 
     def view_translate(self, x, y):
         mat4_translate(self.view_transform, x, y, 0)
@@ -102,6 +105,8 @@ class Renderer:
 
     def view_scale_at_point(self, x, y, s):
         mat4_scale_at_point(self.view_transform, x, y, s)
+        vt = self.view_transform
+        self.view_scale_amount = sqrt(pow(vt[0][0], 2) + pow(vt[0][1], 2) + pow(vt[0][2], 2))
     
     def view_flip_at_point(self, x):
         self.view_flipped = False if self.view_flipped else True
@@ -115,6 +120,10 @@ class Renderer:
         GL.glBindTexture( GL.GL_TEXTURE_2D, self.view.fb.texture.id )
         GL.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_RGB16, self.window_size[0], self.window_size[1], 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, None)
         self.ortho_matrix = mat4_ortho(self.window_size[0], self.window_size[1])
+        self.screen.fb.width = window_size[0]
+        self.screen.fb.height = window_size[1]
+        self.view.fb.width = window_size[0]
+        self.view.fb.height = window_size[1]
 
     def render(self):
         self.view_transform_screen = mat4_mul(self.view_transform, self.ortho_matrix)
@@ -127,7 +136,7 @@ class Renderer:
         self.screen.render({
             "brushcolor": self.input_state.brush.color,
             "opacity": self.input_state.brush.opacity,
-            "diam": max(self.input_state.brush.size, 2.0),
+            "diam": max(self.input_state.brush.size * self.view_scale_amount, 1.0),
             "mpos": (self.input_state.mpos[0] / self.window_size[0], self.input_state.mpos[1] / self.window_size[1]),
             "winsize": (self.window_size[0], self.window_size[1]),
             "basetexture": self.view.fb.texture,
