@@ -23,7 +23,8 @@ class BrushSettings(JsonLoadable):
         self.size = 20.0
         self.softness = 1.0
         self.opacity = 1.0
-        self.color = [ 0.9, 0.2, 0.4, 1.0 ]
+        self.color = [ 1.0, 1.0, 1.0, 1.0 ]
+        self.color2 = [ 0.0, 0.0, 0.0, 1.0 ]
         self.showcolor = True
         self.mixamt = 0.0
 

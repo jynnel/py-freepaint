@@ -69,8 +69,7 @@ class Renderer:
             }
         )
         self.view_transform = mat4_identity()
-        hz = self.canvas_size * 0.5
-        mat4_translate(self.view_transform, self.window_size[0] * 0.5 - hz, self.window_size[1] * 0.5 - hz, -0.5)
+        self.view_reset()
 
         self.screen = RenderTarget(
             {
@@ -89,6 +88,12 @@ class Renderer:
         )
         self.screen.fb.id = self.system_framebuffer_id
 
+    def view_reset(self):
+        self.view_flipped = False
+        self.view_transform = mat4_identity()
+        hz = self.canvas_size * 0.5
+        mat4_translate(self.view_transform, self.window_size[0] * 0.5 - hz, self.window_size[1] * 0.5 - hz, 0)
+
     def view_translate(self, x, y):
         mat4_translate(self.view_transform, x, y, 0)
     
@@ -99,6 +104,7 @@ class Renderer:
         mat4_scale_at_point(self.view_transform, x, y, s)
     
     def view_flip_at_point(self, x):
+        self.view_flipped = False if self.view_flipped else True
         mat4_flip_horizontal_at_point(self.view_transform, x)
 
     def close(self):
@@ -113,8 +119,6 @@ class Renderer:
     def render(self):
         self.view_transform_screen = mat4_mul(self.view_transform, self.ortho_matrix)
         
-        GL.glViewport(0, 0, self.window_size[0], self.window_size[1])
-
         self.view.render({
             "basetexture": self.canvas.fbs[0].texture if self.canvas.toggle else self.canvas.fbs[1].texture,
             "transform": self.view_transform_screen

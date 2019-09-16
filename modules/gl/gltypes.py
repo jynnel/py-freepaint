@@ -184,6 +184,7 @@ class Framebuffer:
 
     def use(self):
         GL.glBindFramebuffer( GL.GL_FRAMEBUFFER, self.id )
+        GL.glViewport(0, 0, self.width, self.height)
 
 class RenderTarget:
     def __init__(self, prog_args, vao_args, fb_args):
@@ -204,6 +205,12 @@ class RenderTarget:
         GL.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT )
 
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )
+    
+    def read_pixel(self, x, y):
+        self.fb.use()
+        arr = GL.glReadPixels( x, y, 1, 1, GL.GL_RGBA, GL.GL_FLOAT )
+        flat = arr.flat
+        return (flat[0], flat[1], flat[2], flat[3])
 
 class DualFramebuffer:
     def __init__(self, width, height, color, gen_mipmaps):

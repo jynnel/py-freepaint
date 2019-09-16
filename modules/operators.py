@@ -129,10 +129,16 @@ class Operators:
             renderer.view_scale_at_point(xy[0], xy[1], scale)
 
         elif op == "color_pick":
-            pass
+            if finish:
+                return
+            xy = input_state.mpos
+            input_state.brush.color = renderer.screen.read_pixel(xy[0], xy[1])
 
         elif op == "view_reset":
-            pass
+            if finish:
+                return
+            
+            renderer.view_reset()
 
         elif op == "view_flip":
             if finish:
@@ -142,9 +148,24 @@ class Operators:
             renderer.view_flip_at_point(x)
         
         elif op == "set_brush":
+            if finish:
+                return
+            
             name = input_state.operator_set_value
             if name in input_state.brush.progs:
                 print(f"Set brush: {name}")
                 input_state.brush.current_prog = name
             else:
                 print(f"Unknown brush: {name}")
+        
+        elif op == "swap_color":
+            if finish:
+                return
+            
+            brush = input_state.brush
+
+            print("swapping colors")
+            temp = deepcopy(brush.color)
+            brush.color = brush.color2
+            brush.color2 = temp
+            print(brush.color)
