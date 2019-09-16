@@ -234,10 +234,7 @@ class DualFramebuffer:
         
         fb = self.fbs[self.toggle]
         fb.use()
-
-        GL.glViewport(0, 0, self.size[0], self.size[1])
-
-        self.fbs[0 if self.toggle else 1].texture.use()
+        self.fbs[1 - self.toggle].texture.use()
         
         program.set_uniforms(uniforms)
 
@@ -257,17 +254,23 @@ class DualFramebuffer:
         if scisw < 0.0 or scish < 0.0:
             return
         
-        GL.glScissor( GL.GLint(int(scisx)), GL.GLint(int(scisy)), GL.GLsizei(int(scisw)), GL.GLsizei(int(scish)) )
+        giscisx = GL.GLint(int(scisx))
+        giscisy = GL.GLint(int(scisy))
+        giscisw = GL.GLint(int(scisw))
+        giscish = GL.GLint(int(scish))
+
+        GL.glScissor( giscisx, giscisy, giscisw, giscish )
         GL.glEnable( GL.GL_SCISSOR_TEST )
-
         GL.glDrawArrays( GL.GL_TRIANGLE_STRIP, 0, 4 )
-
         GL.glDisable( GL.GL_SCISSOR_TEST )
+        
+        GL.glCopyTexSubImage2D( GL.GL_TEXTURE_2D, 0, giscisx, giscisy, giscisx, giscisy, giscisw, giscish )
 
         if fb.gen_mipmaps:
             fb.update_mipmaps()
 
-        self.toggle = 0 if self.toggle else 1
+        self.toggle = 1 - self.toggle
+        
     
     def clear(self):
         for fb in self.fbs:
