@@ -12,7 +12,6 @@ elif platform.startswith("win32"):
 
 from modules.math import vec2f_mat4_mul_inverse
 from modules.gl.glrenderer import Renderer
-from modules.gl.gltypes import Program
 from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustReleased
 from modules.operators import Operators
 from modules.settings import Settings

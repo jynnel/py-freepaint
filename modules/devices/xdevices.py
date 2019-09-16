@@ -34,7 +34,8 @@ class Device:
         self.name = name
         self.active = False
         self.valuators = {}
-    
+        self.inactive_frames = 0
+
     def select_events(self, window):
         xinput.select_events(window, ((self.deviceid, xinput.MotionMask),))
 
@@ -90,9 +91,12 @@ class Devices:
                 _ = self.display.next_event()
             
             if not dev.active:
-                for valname in STYLUS_DUMMY_VALUES:
-                    dev.valuators[valname] = STYLUS_DUMMY_VALUES[valname]
-                return
+                dev.inactive_frames += 1
+                if dev.inactive_frames > 2:
+                    for valname in STYLUS_DUMMY_VALUES:
+                        dev.valuators[valname] = STYLUS_DUMMY_VALUES[valname]
+                    return
+            else: dev.inactive_frames = 0
 
             # then simply query the device state as I couldn't find anything like XGetEventData in the Xlib library.
             dev_info = xinput.query_device(self.display, dev.deviceid)._data["devices"][0]
@@ -101,6 +105,8 @@ class Devices:
                 if c["type"] == xinput.ValuatorClass:
                     valuator_name = self.display.get_atom_name(int(c["label"]))
                     dev.valuators[convert_valuator_name(valuator_name)] = (c["value"] - c["min"]) / (c["max"] - c["min"])
+                    if valuator_name == "pressure":
+                        print(c["value"])
 
     def is_device_active(self, namestr):
         if namestr not in self.devices:
