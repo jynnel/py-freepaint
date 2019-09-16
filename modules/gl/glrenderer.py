@@ -5,7 +5,7 @@ OpenGL.ERROR_CHECKING = False
 from OpenGL import GL
 from OpenGL.GL import shaders
 
-from modules.math import mat4_ortho, mat4_mul, mat4_identity, mat4_translate, mat4_print
+from modules.math import mat4_ortho, mat4_mul, mat4_identity, mat4_translate, mat4_rotate_z_at_point, mat4_scale_at_point, mat4_flip_horizontal_at_point
 from modules.gl.gltypes import Program, RenderTarget, DualFramebuffer
 
 DEFAULT_CANVAS = {
@@ -46,6 +46,7 @@ class Renderer:
 
         self.ortho_matrix = mat4_ortho(self.window_size[0], self.window_size[1])
 
+        GL.glEnable( GL.GL_MULTISAMPLE )
         GL.glClearColor(0, 0, 0, 1)
 
         self.system_framebuffer_id = GL.glGetIntegerv( GL.GL_FRAMEBUFFER_BINDING )
@@ -87,6 +88,18 @@ class Renderer:
             }
         )
         self.screen.fb.id = self.system_framebuffer_id
+
+    def view_translate(self, x, y):
+        mat4_translate(self.view_transform, x, y, 0)
+    
+    def view_rotate_at_point(self, x, y, a):
+        mat4_rotate_z_at_point(self.view_transform, x, y, a)
+
+    def view_scale_at_point(self, x, y, s):
+        mat4_scale_at_point(self.view_transform, x, y, s)
+    
+    def view_flip_at_point(self, x):
+        mat4_flip_horizontal_at_point(self.view_transform, x)
 
     def close(self):
         pass

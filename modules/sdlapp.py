@@ -36,6 +36,14 @@ class SDLApp:
         if sdl2.SDL_Init(sdl2.SDL_INIT_VIDEO) != 0:
             print(sdl2.SDL_GetError())
         
+        v = sdl2.video
+        v.SDL_GL_SetAttribute( v.SDL_GL_MULTISAMPLEBUFFERS, 1 )
+        v.SDL_GL_SetAttribute( v.SDL_GL_MULTISAMPLESAMPLES, 2 )
+
+        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
+        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MINOR_VERSION, 2)
+        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_PROFILE_MASK, v.SDL_GL_CONTEXT_PROFILE_CORE)
+
         width = self.settings.win_start_size[0]
         height = self.settings.win_start_size[1]
         pos = sdl2.SDL_WINDOWPOS_UNDEFINED
@@ -52,12 +60,8 @@ class SDLApp:
         sdl2.SDL_ShowCursor(sdl2.SDL_ENABLE if self.settings.show_cursor else sdl2.SDL_DISABLE)
         self.windowID = sdl2.SDL_GetWindowID(self.window)
 
-        v = sdl2.video
-        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
-        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MINOR_VERSION, 2)
-        v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_PROFILE_MASK, v.SDL_GL_CONTEXT_PROFILE_CORE)
         self.context = sdl2.SDL_GL_CreateContext(self.window)
-        
+
         self.input_state = InputState()
         if "bindings" in json:
             for binding in json["bindings"]:
@@ -65,8 +69,10 @@ class SDLApp:
                     binding["motion"] = "none"
                 if not "on" in binding:
                     binding["on"] = "press"
+                if not "to" in binding:
+                    binding["to"] = ""
                 self.input_state.add_keybind(binding["keys"], binding["motion"], binding["command"], \
-                    KeyJustReleased if binding["on"] == "release" else KeyPressed)
+                    KeyJustReleased if binding["on"] == "release" else KeyPressed, binding["to"])
         if "brush" in json:
             self.input_state.brush.from_json(json["brush"])
 
@@ -115,7 +121,7 @@ class SDLApp:
         self.input_state.check_keybinds(self.settings.motion_deadzone)
         
         finish = False
-        if not self.input_state.active_operator and self.input_state.previous_operator:
+        if self.input_state.active_operator == "" and self.input_state.previous_operator:
             finish = True
             self.input_state.active_operator = self.input_state.previous_operator
         
@@ -147,13 +153,13 @@ class SDLApp:
         x = m_x.value
         y = self.window_size[1] - m_y.value
 
-        self.input_state.mpos = (x, y)
-        self.input_state.update_input_history(self.input_state.mpos_history, self.input_state.mpos)
-        self.input_state.mdelta = (self.input_state.mpos[0] - self.input_state.mpos_history[-2][0], self.input_state.mpos[1] - self.input_state.mpos_history[-2][1])
-        
-        self.input_state.mpos_w = vec2f_mat4_mul_inverse( self.renderer.view_transform, (x, y) )
-        self.input_state.update_input_history(self.input_state.mpos_w_history, self.input_state.mpos_w)
+        if (x, y) != self.input_state.mpos_history[-1]:
+            self.input_state.update_input_history(self.input_state.mpos_history, self.input_state.mpos)
+            self.input_state.update_input_history(self.input_state.mpos_w_history, self.input_state.mpos_w)
 
+        self.input_state.mpos = (x, y)
+        self.input_state.mdelta = (self.input_state.mpos[0] - self.input_state.mpos_history[-1][0], self.input_state.mpos[1] - self.input_state.mpos_history[-1][1])
+        self.input_state.mpos_w = vec2f_mat4_mul_inverse( self.renderer.view_transform, (x, y) )
 
     def swap_window(self):
         sdl2.SDL_GL_SwapWindow(self.window)

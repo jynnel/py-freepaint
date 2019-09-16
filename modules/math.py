@@ -1,4 +1,5 @@
-from math import sqrt
+from copy import deepcopy
+from math import sqrt, cos, sin
 
 import numpy
 
@@ -70,3 +71,89 @@ def vec2f_dist( a, b ):
 
 def vec2f_lerp( a, b, t ):
     return ( a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+
+def mat4_scale_at_point( m, x, y, s ):
+    if s != 1.0:
+        m[0][0] *= s
+        m[0][1] *= s
+        m[0][2] *= s
+        m[1][0] *= s
+        m[1][1] *= s
+        m[1][2] *= s
+        m[2][0] *= s
+        m[2][1] *= s
+        m[2][2] *= s
+        m[3][0] -= x
+        m[3][1] -= y
+        m[3][0] *= s
+        m[3][1] *= s
+        m[3][0] += x
+        m[3][1] += y
+
+def mat4_rotate_z_at_point( m, x, y, a ):
+    o = deepcopy(m)
+
+    m[0][0] = o[0][0] *  cos(a) + o[0][1] *  sin(a) + o[0][2]*0
+    m[0][1] = o[0][0] * -sin(a) + o[0][1] *  cos(a) + o[0][2]*0
+    m[0][2] = o[0][0] *    0    + o[0][1] *    0    + o[0][2]*1
+    
+    m[1][0] = o[1][0] *  cos(a) + o[1][1] *  sin(a) + o[1][2]*0
+    m[1][1] = o[1][0] * -sin(a) + o[1][1] *  cos(a) + o[1][2]*0
+    m[1][2] = o[1][0] *    0    + o[1][1] *    0    + o[1][2]*1
+    
+    m[2][0] = o[2][0] *  cos(a) + o[2][1] *  sin(a) + o[2][2]*0
+    m[2][1] = o[2][0] * -sin(a) + o[2][1] *  cos(a) + o[2][2]*0
+    m[2][2] = o[2][0] *    0    + o[2][1] *    0    + o[2][2]*1
+    
+    o[3][0] -= x
+    o[3][1] -= y
+    m[3][0] = o[3][0] *  cos(a) + o[3][1] *  sin(a) + o[3][2]*0
+    m[3][1] = o[3][0] * -sin(a) + o[3][1] *  cos(a) + o[3][2]*0
+    m[3][0] += x
+    m[3][1] += y
+
+def mat4_remove_scale( m, s ):
+    m[0][0] /= s
+    m[0][1] /= s
+    m[0][2] /= s
+    m[1][0] /= s
+    m[1][1] /= s
+    m[1][2] /= s
+    m[2][0] /= s
+    m[2][1] /= s
+    m[2][2] /= s
+
+def mat4_scale( m, s ):
+    m[0][0] *= s
+    m[0][1] *= s
+    m[0][2] *= s
+    m[1][0] *= s
+    m[1][1] *= s
+    m[1][2] *= s
+    m[2][0] *= s
+    m[2][1] *= s
+    m[2][2] *= s
+
+def mat4_rotation_invert( m ):
+    o = deepcopy(m)
+    
+    det = 1.0 / mat4_rotation_determinant( m )
+    
+    for i in range(3):
+        for j in range(3):
+            m[i][j] = ((o[(i+1)%3][(j+1)%3] * o[(i+2)%3][(j+2)%3]) - (o[(i+1)%3][(j+2)%3]*o[(i+2)%3][(j+1)%3])) * det
+    
+    m[0][1] *= -1.0
+    m[1][0] *= -1.0
+    m[1][2] *= -1.0
+    m[2][1] *= -1.0
+
+def mat4_flip_horizontal_at_point( m, x ):
+    s = sqrt(pow(m[0][0], 2) + pow(m[0][1], 2) + pow(m[0][2], 2))
+    mat4_remove_scale( m, s )
+    mat4_rotation_invert( m )
+    m[0][0] *= -1.0
+    m[0][1] *= -1.0
+    mat4_scale( m, s )
+
+    m[3][0] += (x - m[3][0]) * 2.0

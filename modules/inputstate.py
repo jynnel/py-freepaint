@@ -1,4 +1,4 @@
-from sys import exit
+from copy import deepcopy
 
 from modules.settings import JsonLoadable
 from modules.brush import BrushSettings
@@ -17,9 +17,9 @@ class InputState:
         self.stylus = None
 
         self.mpos = (0, 0)
-        self.mpos_history = []
+        self.mpos_history = [(0.0,0.0)]
         self.mpos_w = (0, 0)
-        self.mpos_w_history = []
+        self.mpos_w_history = [(0.0,0.0)]
         self.mdelta = (0, 0)
         self.key_state = {}
         init_key_state(self.key_state)
@@ -27,6 +27,7 @@ class InputState:
         self.found_stylus = False
         self.stylus_active = False
         self.stylus_history = []
+        self.draw_history = []
 
         self.mod_state = {
             "ctrl": KeyNotPressed,
@@ -46,12 +47,14 @@ class InputState:
         self.active_operator = ""
         self.previous_operator = ""
         self.active_axis = AxisHorizontal
+        self.operator_start_mpos = (0, 0)
+        self.operator_set_value = ""
         
         self.brush = BrushSettings()
         self.active_stroke = False
 
-    def add_keybind(self, keys, motion, operator, on):
-        self.keybinds.append(KeyBind(keys, motion, operator, on))
+    def add_keybind(self, keys, motion, operator, on, to):
+        self.keybinds.append(KeyBind(keys, motion, operator, on, to))
 
     def update_input_history(self, history, val):
         history.append(val)
@@ -62,7 +65,6 @@ class InputState:
         elif hlen > InputHistoryLength:
             history.pop(0)
 
-        
     def check_keybinds(self, deadzone):
         for bind in self.keybinds:
             if self.active_operator and self.active_operator != bind.operator:
@@ -86,33 +88,37 @@ class InputState:
                     bind.md_accum[1] += self.mdelta[1]
                     absx = abs(bind.md_accum[0])
                     absy = abs(bind.md_accum[1])
-                    if bind.motion.startswith("h"):
-                        if not self.active_operator and (absx > deadzone and absx > absy):
+                    if not self.active_operator:
+                        if bind.motion.startswith("h") and (absx > deadzone and absx > absy):
+                            self.operator_start_mpos = self.mpos
                             self.active_axis = AxisHorizontal
                             self.active_operator = bind.operator
+                            self.operator_set_value = bind.to
                             return
-                    else:
-                        if not self.active_operator and (absy > deadzone and absy > absx):
+                        elif bind.motion.startswith("v") and (absy > deadzone and absy > absx):
+                            self.operator_start_mpos = self.mpos
                             self.active_axis = AxisVertical
                             self.active_operator = bind.operator
+                            self.operator_set_value = bind.to
                             return
+                    else:
+                        return
                 else:
                     self.active_operator = bind.operator
+                    self.operator_set_value = bind.to
                     return
             else:
                 self.active_operator = ""
                 bind.md_accum = [0, 0]
 
 class KeyBind:
-    def __init__(self, keys, motion, operator, on):
+    def __init__(self, keys, motion, operator, on, to):
         self.keys = keys
         self.motion = motion
         self.operator = operator
         self.on = on
         self.md_accum = [0, 0]
-
-    def __str__(self):
-        return f"keys: {self.keys}, motion: {self.motion}, command: {self.operator}, on: {self.on}"
+        self.to = to
 
 def init_key_state(ks):
     ks["enter"] = KeyNotPressed
