@@ -16,10 +16,6 @@ from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustRel
 from modules.operators import Operators
 from modules.settings import Settings
 
-SM0 = 0.85
-SM1 = (1.0 - SM0)*SM0
-SM2 = (1.0 - SM0)*(1.0 - SM0)
-
 class SDLApp:
     def __init__(self, title, width, height):
         self.paused = False
@@ -153,12 +149,11 @@ class SDLApp:
         x = m_x.value
         y = self.window_size[1] - m_y.value
 
-        if len(self.input_state.mpos_history) >= 2:
-            c = (x, y)
-            p = self.input_state.mpos_history[-1]
-            pp = self.input_state.mpos_history[-2]
-            x = c[0]*SM0 + p[0]*SM1 + pp[0]*SM2
-            y = c[1]*SM0 + p[1]*SM1 + pp[1]*SM2
+        a = 1.0 - self.input_state.brush.smoothing
+        p = (x, y)
+        p1 = self.input_state.mpos_history[-1]
+        x = p[0] * a + p1[0] * (1-a)
+        y = p[1] * a + p1[1] * (1-a) 
 
         if (x, y) != self.input_state.mpos_history[-1]:
             self.input_state.update_input_history(self.input_state.mpos_history, self.input_state.mpos)

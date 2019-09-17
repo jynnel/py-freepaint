@@ -38,9 +38,9 @@ class Operators:
                 mpw[-2] = cur_mpos
                 mpw[-1] = cur_mpos
             
-            p0 = array(mpw[-3], dtype="float32")
-            p1 = array(mpw[-2], dtype="float32")
-            p2 = array(mpw[-1], dtype="float32")
+            p0 = array(mpw[-2], dtype="float32")
+            p1 = array(mpw[-1], dtype="float32")
+            p2 = array(cur_mpos, dtype="float32")
             p3 = array(cur_mpos, dtype="float32")
 
             spacing = max(input_state.brush.size / 60.0, 1.0)
@@ -55,7 +55,7 @@ class Operators:
             
             pos_p = input_state.draw_history[-1] if input_state.active_stroke and input_state.draw_history else cur_mpos
 
-            if input_state.active_stroke and p3[0] == p2[0] and p3[1] == p2[1]:
+            if input_state.active_stroke and p2[0] == p1[0] and p2[1] == p1[1]:
                 return
 
             t = 0.0

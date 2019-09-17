@@ -27,6 +27,7 @@ class BrushSettings(JsonLoadable):
         self.color2 = [ 0.0, 0.0, 0.0, 1.0 ]
         self.showcolor = True
         self.mixamt = 0.0
+        self.smoothing = 0.5
 
         path_v = "shaders/draw/draw.vert"
         self.progs = {}

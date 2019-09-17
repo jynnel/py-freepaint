@@ -11,7 +11,7 @@ KeyPressed = 1
 AxisHorizontal = 0
 AxisVertical = 1
 
-ReleaseCommands = ("view_flip", "color_pick", "swap_color")
+ReleaseCommands = ("view_flip", "color_pick", "swap_color", "set_brush")
 
 class InputState:
     def __init__(self):
