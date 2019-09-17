@@ -38,9 +38,9 @@ class Operators:
                 mpw[-2] = cur_mpos
                 mpw[-1] = cur_mpos
             
-            p0 = array(mpw[-2], dtype="float32")
-            p1 = array(mpw[-1], dtype="float32")
-            p2 = array(cur_mpos, dtype="float32")
+            p0 = array(mpw[-3], dtype="float32")
+            p1 = array(mpw[-2], dtype="float32")
+            p2 = array(mpw[-1], dtype="float32")
             p3 = array(cur_mpos, dtype="float32")
 
             spacing = max(input_state.brush.size / 60.0, 1.0)
@@ -83,7 +83,8 @@ class Operators:
                         "mpos": xy,
                         "motion": motion,
                         "px": 1.0 / renderer.canvas.fbs[0].width,
-                        "sz": renderer.canvas.fbs[0].width
+                        "sz": renderer.canvas.fbs[0].width,
+                        "mixamount": input_state.brush.mixamount
                     }
                 )
                 input_state.update_input_history(input_state.draw_history, xy)

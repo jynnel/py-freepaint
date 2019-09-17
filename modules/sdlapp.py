@@ -149,7 +149,7 @@ class SDLApp:
         x = m_x.value
         y = self.window_size[1] - m_y.value
 
-        a = 1.0 - self.input_state.brush.smoothing
+        a = 1.0 - min(max(self.input_state.brush.smoothing, 0.0), 1.0) * 0.8
         p = (x, y)
         p1 = self.input_state.mpos_history[-1]
         x = p[0] * a + p1[0] * (1-a)
