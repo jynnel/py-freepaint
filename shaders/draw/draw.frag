@@ -2,7 +2,6 @@
 in vec2 uv;
 out vec4 color;
 
-// uniform vec4 mixcolor;
 uniform vec4 brushcolor;
 uniform float softness;
 uniform float radius;
@@ -13,10 +12,6 @@ uniform vec2 mpos;
 uniform float sz;
 
 uniform sampler2D basetexture;
-
-// #define PI 3.1415926535897932384626433832795
-// #define sz 512.0
-// #define px 1.0/sz
 
 void main() {
     vec4 texcolor = texture( basetexture, uv );
@@ -36,6 +31,5 @@ void main() {
     vec4 mixcolor = texture( basetexture, uv, lod );
     
     float opac = clamp( mask * opacity, 0.0, 1.0 );
-    color = mix( texcolor, mix( brushcolor, mix(texcolor, mixcolor, mixamount), (1.0-pressure) ), opac );
-    // color = mix( texcolor, brushcolor, opac );
+    color = mix( texcolor, mix( mix(texcolor, mixcolor, mixamount), brushcolor, pressure ), opac );
 }

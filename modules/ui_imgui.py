@@ -51,7 +51,7 @@ class UI():
             if not opened:
                 self.visible_windows.remove(BrushSettingsWindow)
             else:
-                for attr in (("size", 1.0, 80.0), ("softness", 0.0, 1.0), ("smoothing", 0.0, 1.0), ("opacity", 0.0, 1.0), ("mixamount", 0.0, 1.0)):
+                for attr in (("size", 1.0, 80.0), ("softness", 0.0, 1.0), ("opacity", 0.0, 1.0), ("mixamount", 0.0, 1.0), ("smoothing", 0.0, 1.0)):
                     changed, val = imgui.slider_float(attr[0].capitalize(), getattr(b, attr[0]), attr[1], attr[2], "%.3f", 1.0)
                     if changed:
                         setattr(b, attr[0], val)
