@@ -1,3 +1,5 @@
+from modules.devices.stylusdummy import STYLUS_DUMMY_VALUES
+
 class Devices:
     def __init__(self):
         pass
@@ -12,7 +14,8 @@ class Devices:
         pass
 
     def is_device_active(self, namestr):
-        pass
+        return False
 
     def get_device_values(self, namestr):
-        pass
+        return STYLUS_DUMMY_VALUES
+

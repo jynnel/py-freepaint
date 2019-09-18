@@ -4,14 +4,7 @@ import Xlib
 from Xlib.display import Display
 from Xlib.ext import xinput
 
-STYLUS_DUMMY_VALUES = {
-    "x": 0.0,
-    "y": 0.0,
-    "pressure": 1.0,
-    "tilt x": 0.5,
-    "tilt y": 0.5,
-    "wheel": 0.0
-}
+from modules.devices.stylusdummy import STYLUS_DUMMY_VALUES
 
 def convert_valuator_name(name):
     if name in ("Abs X"):

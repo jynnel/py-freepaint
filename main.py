@@ -13,13 +13,13 @@ dname = os.path.abspath(os.path.dirname(sys.argv[0]))
 os.chdir(dname)
 print(dname)
 
-from modules.sdlapp import SDLApp
+from modules.glfwapp import App
 
 FPS = 120.0
 FRAME_DELTA = 1000.0 / FPS
 
 def main(argv):
-    app = SDLApp("py-fp", 580, 580)
+    app = App("py-fp")
 
     waitpoint = app.get_ticks() + FRAME_DELTA
     while app.running:

@@ -40,8 +40,7 @@ DEFAULT_SCREENQUAD = {
 }
 
 class Renderer:
-    def __init__(self, context, window_size, canvas_size, input_state):
-        self.context = context        
+    def __init__(self, window_size, canvas_size, input_state):
         self.window_size = window_size
         self.input_state = input_state
 

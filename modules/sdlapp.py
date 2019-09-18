@@ -16,8 +16,8 @@ from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustRel
 from modules.operators import Operators
 from modules.settings import Settings
 
-class SDLApp:
-    def __init__(self, title, width, height):
+class App:
+    def __init__(self, title):
         self.paused = False
         self.settings = Settings()
         self.ops = Operators()
@@ -75,7 +75,7 @@ class SDLApp:
         self.input_state.found_stylus = self.devices.add_device("stylus")
 
         self.update_window_size()
-        self.renderer = Renderer(self.context, self.window_size, self.settings.canvas_size, self.input_state)
+        self.renderer = Renderer(self.window_size, self.settings.canvas_size, self.input_state)
 
         self.event = sdl2.SDL_Event()
         
@@ -127,9 +127,9 @@ class SDLApp:
             self.input_state.active_bind = None
 
     def parse_events(self):
-        reset_key_state(self.input_state.mouse_state)
-        reset_key_state(self.input_state.mod_state)
-        reset_key_state(self.input_state.key_state)
+        self.input_state.reset_key_state(self.input_state.mouse_state)
+        self.input_state.reset_key_state(self.input_state.mod_state)
+        self.input_state.reset_key_state(self.input_state.key_state)
         
         while sdl2.SDL_PollEvent(byref(self.event)) != 0:
             if self.event.type == sdl2.SDL_QUIT:
@@ -152,20 +152,7 @@ class SDLApp:
         x = m_x.value
         y = self.window_size[1] - m_y.value
 
-        a = 1.0 - min(max(self.input_state.brush.smoothing, 0.0), 1.0) * 0.8
-
-        # smoothing with many points didn't seem to work right
-        # x = x * a
-        # y = y * a
-        # for i in range(1, InputHistoryLength):
-        #     p = self.input_state.mpos_history[-i]
-        #     aexp = pow((1 - a), i)
-        #     x += p[0] * aexp * a
-        #     y += p[1] * aexp * a
-        
-        p = self.input_state.mpos_history[-1]
-        x = x * a + p[0] * (1 - a)
-        y = y * a + p[1] * (1 - a)
+        x, y = self.input_state.smooth_mpos(x, y)
 
         if (x, y) != self.input_state.mpos_history[-1]:
             self.input_state.update_input_history(self.input_state.mpos_history, self.input_state.mpos)
@@ -177,11 +164,6 @@ class SDLApp:
 
     def swap_window(self):
         sdl2.SDL_GL_SwapWindow(self.window)
-
-def reset_key_state(state):
-    for key in state:
-        if state[key] == KeyJustReleased:
-            state[key] = KeyNotPressed
 
 def update_mouse_state(mouse_state, ev):
     if ev.button.button == sdl2.SDL_BUTTON_LEFT:
@@ -243,25 +225,25 @@ def update_key_state(key_state, mod_state, ev):
     elif ev.keysym.sym == sdl2.SDLK_SLASH:
         key_state["slash"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_0:
-        key_state["k0"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["0"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_1:
-        key_state["k1"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["1"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_2:
-        key_state["k2"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["2"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_3:
-        key_state["k3"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["3"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_4:
-        key_state["k4"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["4"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_5:
-        key_state["k5"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["5"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_6:
-        key_state["k6"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["6"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_7:
-        key_state["k7"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["7"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_8:
-        key_state["k8"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["8"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_9:
-        key_state["k9"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
+        key_state["9"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_COLON:
         key_state["colon"] = KeyPressed if ev.type == sdl2.SDL_KEYDOWN else (KeyJustReleased if ev.type == sdl2.SDL_KEYUP else KeyNotPressed)
     elif ev.keysym.sym == sdl2.SDLK_SEMICOLON:
