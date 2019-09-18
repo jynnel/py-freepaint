@@ -135,7 +135,7 @@ class Operators:
             if finish:
                 return
             xy = input_state.mpos
-            input_state.brush.color = renderer.screen.read_pixel(xy[0], xy[1])
+            input_state.brush.color = renderer.view.read_pixel(xy[0], xy[1])
 
         elif bind.operator == "view_reset":
             if finish:
