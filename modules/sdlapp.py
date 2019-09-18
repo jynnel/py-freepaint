@@ -15,6 +15,7 @@ from modules.gl.glrenderer import Renderer
 from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustReleased, InputHistoryLength
 from modules.operators import Operators
 from modules.settings import Settings
+from modules.ui_imgui import UI
 
 class App:
     def __init__(self, title):
@@ -36,9 +37,6 @@ class App:
             print(sdl2.SDL_GetError())
         
         v = sdl2.video
-        v.SDL_GL_SetAttribute( v.SDL_GL_MULTISAMPLEBUFFERS, 1 )
-        v.SDL_GL_SetAttribute( v.SDL_GL_MULTISAMPLESAMPLES, 2 )
-
         v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
         v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_MINOR_VERSION, 3)
         v.SDL_GL_SetAttribute(v.SDL_GL_CONTEXT_PROFILE_MASK, v.SDL_GL_CONTEXT_PROFILE_CORE)
@@ -47,11 +45,14 @@ class App:
         height = self.settings.win_start_size[1]
         pos = sdl2.SDL_WINDOWPOS_UNDEFINED
         self.window = sdl2.SDL_CreateWindow(title.encode('ascii'), pos, pos, width, height, sdl2.SDL_WINDOW_OPENGL | sdl2.SDL_WINDOW_RESIZABLE )
-        self.window_size = [0, 0]
 
         if not self.window:
             print(sdl2.SDL_GetError())
         
+        self.window_size = [0, 0]
+        self.update_window_size()
+        self.windowID = sdl2.SDL_GetWindowID(self.window)
+
         wm_info = sdl2.SDL_SysWMinfo()
         sdl2.SDL_GetVersion(wm_info.version)
         print(f"SDL2 version {wm_info.version.major}.{wm_info.version.minor}.{wm_info.version.patch}")
@@ -59,8 +60,6 @@ class App:
         sdl2.SDL_ShowCursor(sdl2.SDL_ENABLE if self.settings.show_cursor else sdl2.SDL_DISABLE)
         cursor = sdl2.SDL_CreateSystemCursor( sdl2.SDL_SYSTEM_CURSOR_CROSSHAIR )
         sdl2.SDL_SetCursor(cursor)
-
-        self.windowID = sdl2.SDL_GetWindowID(self.window)
 
         self.context = sdl2.SDL_GL_CreateContext(self.window)
 
@@ -74,12 +73,13 @@ class App:
         self.devices = Devices()
         self.input_state.found_stylus = self.devices.add_device("stylus")
 
-        self.update_window_size()
         self.renderer = Renderer(self.window_size, self.settings.canvas_size, self.input_state)
 
         self.event = sdl2.SDL_Event()
         
         self.running = True
+
+        self.ui = UI(self.window)
 
     def update_window_size(self):
         w = c_int()
@@ -94,6 +94,7 @@ class App:
     def close(self):
         self.devices.close()
         self.renderer.close()
+        self.ui.close()
         sdl2.SDL_GL_DeleteContext(self.context)
         sdl2.SDL_DestroyWindow(self.window)
         sdl2.SDL_Quit()
@@ -126,6 +127,12 @@ class App:
         if finish:
             self.input_state.active_bind = None
 
+    def render(self):
+        self.renderer.render()
+        result = self.ui.do_ui(self.input_state)
+        if result == "quit":
+            self.running = False
+
     def parse_events(self):
         self.input_state.reset_key_state(self.input_state.mouse_state)
         self.input_state.reset_key_state(self.input_state.mod_state)
@@ -144,7 +151,10 @@ class App:
             elif self.event.type in (sdl2.SDL_KEYDOWN, sdl2.SDL_KEYUP):
                 update_key_state(self.input_state.key_state, self.input_state.mod_state, self.event.key)
             elif self.event.type in (sdl2.SDL_MOUSEBUTTONDOWN, sdl2.SDL_MOUSEBUTTONUP):
-                update_mouse_state(self.input_state.mouse_state, self.event)
+                if not self.ui.want_mouse_capture():
+                    update_mouse_state(self.input_state.mouse_state, self.event)
+            self.ui.process_event(self.event)
+        self.ui.process_inputs()
         
         m_x = c_int()
         m_y = c_int()

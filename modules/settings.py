@@ -2,7 +2,7 @@ from os import listdir
 
 from modules.gl.gltypes import Program
 
-class JsonLoadable:
+class JsonLoadable(object):
     def from_json(self, json):
         for setting in json:
             setattr(self, setting, json[setting])

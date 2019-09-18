@@ -11,9 +11,8 @@ import os
 
 dname = os.path.abspath(os.path.dirname(sys.argv[0]))
 os.chdir(dname)
-print(dname)
 
-from modules.glfwapp import App
+from modules.sdlapp import App
 
 FPS = 120.0
 FRAME_DELTA = 1000.0 / FPS
@@ -27,7 +26,7 @@ def main(argv):
 
         if not app.paused:
             app.check_keybinds_and_run_operators()
-            app.renderer.render()
+            app.render()
         app.swap_window()
 
         now = app.get_ticks()

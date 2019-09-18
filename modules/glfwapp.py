@@ -220,6 +220,7 @@ def key_callback(window, key, scancode, action, mods):
             key_state["left_bracket"] = KeyPressed if action in (glfw.PRESS, glfw.REPEAT) else (KeyJustReleased if action == glfw.RELEASE else KeyNotPressed)
         elif name == "`":
             key_state["grave_accent"] = KeyPressed if action in (glfw.PRESS, glfw.REPEAT) else (KeyJustReleased if action == glfw.RELEASE else KeyNotPressed)
+        return
 
     if key in (glfw.KEY_LEFT_CONTROL, glfw.KEY_RIGHT_CONTROL):
         mod_state["ctrl"] = KeyPressed if action in (glfw.PRESS, glfw.REPEAT) else (KeyJustReleased if action == glfw.RELEASE else KeyNotPressed)

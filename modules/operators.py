@@ -84,7 +84,7 @@ class Operators:
                         "motion": motion,
                         "px": 1.0 / renderer.canvas.fbs[0].width,
                         "sz": renderer.canvas.fbs[0].width,
-                        "mixamount": input_state.brush.mixamount
+                        "mixamount": input_state.brush.mixamount * 0.99
                     }
                 )
                 input_state.update_input_history(input_state.draw_history, xy)
