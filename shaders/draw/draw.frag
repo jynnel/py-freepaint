@@ -36,6 +36,6 @@ void main() {
     vec4 mixcolor = texture( basetexture, uv, lod );
     
     float opac = clamp( mask * opacity, 0.0, 1.0 );
-    color = mix( texcolor, mix( brushcolor, mix(texcolor, mixcolor, mixamount), mixamount * pressure ), opac );
+    color = mix( texcolor, mix( brushcolor, mix(texcolor, mixcolor, mixamount), (1.0-pressure) ), opac );
     // color = mix( texcolor, brushcolor, opac );
 }
