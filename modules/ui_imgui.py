@@ -13,6 +13,9 @@ class UI():
 
     def want_mouse_capture(self):
         return self.io.want_capture_mouse
+    
+    def is_any_window_hovered(self):
+        return imgui.is_window_hovered(imgui.HOVERED_ANY_WINDOW)
 
     def process_event(self, event):
         self.impl.process_event(event)

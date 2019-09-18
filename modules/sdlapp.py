@@ -57,10 +57,11 @@ class App:
         sdl2.SDL_GetVersion(wm_info.version)
         print(f"SDL2 version {wm_info.version.major}.{wm_info.version.minor}.{wm_info.version.patch}")
 
-        sdl2.SDL_ShowCursor(sdl2.SDL_ENABLE if self.settings.show_cursor else sdl2.SDL_DISABLE)
-        cursor = sdl2.SDL_CreateSystemCursor( sdl2.SDL_SYSTEM_CURSOR_CROSSHAIR )
-        sdl2.SDL_SetCursor(cursor)
-
+        self.cursor_crosshair = sdl2.SDL_CreateSystemCursor( sdl2.SDL_SYSTEM_CURSOR_CROSSHAIR )
+        self.cursor_arrow = sdl2.SDL_CreateSystemCursor( sdl2.SDL_SYSTEM_CURSOR_ARROW )
+        self.set_cursor(self.cursor_crosshair)
+        self.set_cursor_visibility(self.settings.show_cursor)
+        
         self.context = sdl2.SDL_GL_CreateContext(self.window)
 
         self.input_state = InputState()
@@ -133,11 +134,27 @@ class App:
         if result == "quit":
             self.running = False
 
+    def show_cursor(self):
+        sdl2.SDL_ShowCursor(sdl2.SDL_ENABLE)
+
+    def set_cursor(self, cursor):
+        sdl2.SDL_SetCursor(cursor)
+
+    def set_cursor_visibility(self, to):
+        sdl2.SDL_ShowCursor(sdl2.SDL_ENABLE if to else sdl2.SDL_DISABLE)
+
     def parse_events(self):
         self.input_state.reset_key_state(self.input_state.mouse_state)
         self.input_state.reset_key_state(self.input_state.mod_state)
         self.input_state.reset_key_state(self.input_state.key_state)
-        
+
+        if self.ui.is_any_window_hovered():
+            self.set_cursor(self.cursor_arrow)
+            self.set_cursor_visibility(True)
+        else:
+            self.set_cursor(self.cursor_crosshair)
+            self.set_cursor_visibility(self.settings.show_cursor)
+
         while sdl2.SDL_PollEvent(byref(self.event)) != 0:
             if self.event.type == sdl2.SDL_QUIT:
                 self.running = False
