@@ -18,12 +18,14 @@ class InputState:
         self.stylus = None
 
         self.mpos = (0, 0)
-        self.mpos_history = [(0.0,0.0)]
+        self.mpos_history = [(0.0,0.0), (0.0, 0.0)]
         self.mpos_w = (0, 0)
-        self.mpos_w_history = [(0.0,0.0)]
+        self.mpos_w_history = [(0.0,0.0), (0.0, 0.0)]
         self.mdelta = (0, 0)
         self.key_state = {}
         init_key_state(self.key_state)
+
+        self.update_input_history(self.mpos_history, (0.0, 0.0))
 
         self.found_stylus = False
         self.stylus_active = False

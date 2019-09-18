@@ -12,7 +12,7 @@ elif platform.startswith("win32"):
 
 from modules.math import vec2f_mat4_mul_inverse
 from modules.gl.glrenderer import Renderer
-from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustReleased
+from modules.inputstate import InputState, KeyPressed, KeyNotPressed, KeyJustReleased, InputHistoryLength
 from modules.operators import Operators
 from modules.settings import Settings
 
@@ -57,6 +57,9 @@ class SDLApp:
         print(f"SDL2 version {wm_info.version.major}.{wm_info.version.minor}.{wm_info.version.patch}")
 
         sdl2.SDL_ShowCursor(sdl2.SDL_ENABLE if self.settings.show_cursor else sdl2.SDL_DISABLE)
+        cursor = sdl2.SDL_CreateSystemCursor( sdl2.SDL_SYSTEM_CURSOR_CROSSHAIR )
+        sdl2.SDL_SetCursor(cursor)
+
         self.windowID = sdl2.SDL_GetWindowID(self.window)
 
         self.context = sdl2.SDL_GL_CreateContext(self.window)
@@ -72,7 +75,7 @@ class SDLApp:
         self.input_state.found_stylus = self.devices.add_device("stylus")
 
         self.update_window_size()
-        self.renderer = Renderer(self.context, self.window_size, self.input_state)
+        self.renderer = Renderer(self.context, self.window_size, self.settings.canvas_size, self.input_state)
 
         self.event = sdl2.SDL_Event()
         
@@ -150,10 +153,19 @@ class SDLApp:
         y = self.window_size[1] - m_y.value
 
         a = 1.0 - min(max(self.input_state.brush.smoothing, 0.0), 1.0) * 0.8
-        p = (x, y)
-        p1 = self.input_state.mpos_history[-1]
-        x = p[0] * a + p1[0] * (1-a)
-        y = p[1] * a + p1[1] * (1-a) 
+
+        # smoothing with many points didn't seem to work right
+        # x = x * a
+        # y = y * a
+        # for i in range(1, InputHistoryLength):
+        #     p = self.input_state.mpos_history[-i]
+        #     aexp = pow((1 - a), i)
+        #     x += p[0] * aexp * a
+        #     y += p[1] * aexp * a
+        
+        p = self.input_state.mpos_history[-1]
+        x = x * a + p[0] * (1 - a)
+        y = y * a + p[1] * (1 - a)
 
         if (x, y) != self.input_state.mpos_history[-1]:
             self.input_state.update_input_history(self.input_state.mpos_history, self.input_state.mpos)

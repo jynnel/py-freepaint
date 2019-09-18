@@ -40,7 +40,7 @@ DEFAULT_SCREENQUAD = {
 }
 
 class Renderer:
-    def __init__(self, context, window_size, input_state):
+    def __init__(self, context, window_size, canvas_size, input_state):
         self.context = context        
         self.window_size = window_size
         self.input_state = input_state
@@ -52,15 +52,14 @@ class Renderer:
 
         self.system_framebuffer_id = GL.glGetIntegerv( GL.GL_FRAMEBUFFER_BINDING )
 
-        self.canvas_size = 1024
-        self.canvas = DualFramebuffer(self.canvas_size, self.canvas_size, (0.5, 0.5, 0.5, 1.0), True)
+        self.canvas = DualFramebuffer(canvas_size, canvas_size, (0.5, 0.5, 0.5, 1.0), True)
 
         self.view = RenderTarget(
             {
                 "vertex shader path": "shaders/canvas.vert",
                 "fragment shader path": "shaders/canvas.frag",
             }, {
-                "vertices": [v * self.canvas_size for v in DEFAULT_CANVAS["verts"]],
+                "vertices": [v * canvas_size for v in DEFAULT_CANVAS["verts"]],
                 "uvs": DEFAULT_CANVAS["uvs"],
             }, {
                 "width": self.window_size[0],
@@ -93,7 +92,7 @@ class Renderer:
     def view_reset(self):
         self.view_flipped = False
         self.view_transform = mat4_identity()
-        hz = self.canvas_size * 0.5
+        hz = self.canvas.fbs[0].width * 0.5
         mat4_translate(self.view_transform, self.window_size[0] * 0.5 - hz, self.window_size[1] * 0.5 - hz, 0)
         self.view_scale_amount = 1.0
 

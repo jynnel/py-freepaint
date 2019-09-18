@@ -4,10 +4,7 @@
     
     "motion_deadzone": 10,
     
-    "double_click_time": 200,
-    
     "show_cursor": false,
-    "show_debug": true,
     
     "rear_color": [ 0.25, 0.25, 0.25, 1.0 ],
     
