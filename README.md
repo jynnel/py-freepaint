@@ -2,7 +2,7 @@
 
 A minimal digital painting app for Linux systems (running X11) written in Python. Work in progress.
 
-![img](https://i.imgur.com/kakWXAm.png)
+![img](https://i.imgur.com/AjM06S0.png)
 
 ## Milestone 0: September 17, 2019
 
