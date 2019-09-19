@@ -2,7 +2,7 @@
 
 '''
 Required libs:
-    Common: numpy, OpenGL, sdl2, imgui
+    Common: numpy, OpenGL, sdl2, imgui[sdl2]
     Linux: Xlib
 '''
 
