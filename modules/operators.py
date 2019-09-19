@@ -115,7 +115,7 @@ class Operators:
             
             brush.showcolor = True
             amount = input_state.mdelta[input_state.active_axis] / 180.0
-            brush.softness = min(max(brush.softness - amount, 0.0), 1.0)
+            brush.softness = min(max(brush.softness + amount, 0.0), 1.0)
         
         elif bind.operator == "view_pan":
             xy = input_state.mdelta
