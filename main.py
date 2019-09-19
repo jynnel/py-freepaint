@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 '''
 Required libs:
     Common: numpy, OpenGL, sdl2, imgui[sdl2]

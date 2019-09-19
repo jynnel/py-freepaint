@@ -15,7 +15,7 @@ class Settings(JsonLoadable):
         self.show_cursor = False
         self.show_debug = True
         self.rear_color = [ 0.25, 0.25, 0.25, 1.0 ]
-        self.canvas_size = [ 512, 512 ]
+        self.canvas_size = 512
         self.canvas_color = [ 0.4, 0.4, 0.4, 1.0 ]
 
 class BrushSettings(JsonLoadable):
