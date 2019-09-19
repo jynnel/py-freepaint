@@ -1,6 +1,6 @@
 import os
 
-mode = "glfw-"
+mode = "sdl"
 
 initkeystate = '''ks["%s"] = KeyNotPressed
 '''
