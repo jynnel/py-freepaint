@@ -11,7 +11,8 @@ Use your package manager to install Python >= 3.7, and pip for Python 3.
 ```
 git clone https://github.com/vrav/py-freepaint.git
 pip install Xlib numpy imgui[sdl2]
-
+cd py-freepaint
+python ./main.py
 ```
 You may need to substitute pip and python with pip3 and python3 depending on your installation of those packages. The installation of `imgui[sdl2]` will install `PySDL2` and `PyOpenGL` as well. If you're on Arch, you can skip pip for most of these packages, as they are available via pacman.
 
