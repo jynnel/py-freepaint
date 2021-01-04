@@ -16,7 +16,7 @@ which pip (ensure it's the anaconda environment version)
 pip install Xlib==0.21
 pip install numpy==1.19.4
 pip install imgui[sdl2]==1.3.0
-git clone https://github.com/vrav/py-freepaint.git
+git clone https://github.com/jynnel/py-freepaint.git
 cd py-freepaint
 python ./main.py
 ```
