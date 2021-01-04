@@ -20,7 +20,7 @@ git clone https://github.com/vrav/py-freepaint.git
 cd py-freepaint
 python ./main.py
 ```
-You can also try to use 
+Other virtual environment options will probably work.
 
 ## Current Status
 
