@@ -4,6 +4,24 @@ A minimal digital painting app for Linux systems (running X11) written in Python
 
 ![img](https://i.imgur.com/AjM06S0.png)
 
+## Installation
+
+### Linux (warning: alpha!)
+Use your package manager to install anaconda. (You may have to add its bin directory to your path. I choose to do this temporarily per terminal session.)
+```
+conda create -n pyfp python=3.7
+conda activate pyfp
+which python (ensure it's the anaconda environment version)
+which pip (ensure it's the anaconda environment version)
+pip install Xlib==0.21
+pip install numpy==1.19.4
+pip install imgui[sdl2]==1.3.0
+git clone https://github.com/vrav/py-freepaint.git
+cd py-freepaint
+python ./main.py
+```
+You can also try to use 
+
 ## Current Status
 
 A UI has been added, thanks to [pyimgui](https://github.com/swistakm/pyimgui).

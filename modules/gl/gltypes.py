@@ -256,8 +256,8 @@ class DualFramebuffer:
         
         giscisx = GL.GLint(int(scisx))
         giscisy = GL.GLint(int(scisy))
-        giscisw = GL.GLint(int(scisw))
-        giscish = GL.GLint(int(scish))
+        giscisw = GL.GLsizei(int(scisw))
+        giscish = GL.GLsizei(int(scish))
 
         GL.glScissor( giscisx, giscisy, giscisw, giscish )
         GL.glEnable( GL.GL_SCISSOR_TEST )

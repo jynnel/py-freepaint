@@ -8,7 +8,7 @@
     
     "rear_color": [ 0.25, 0.25, 0.25, 1.0 ],
     
-    "canvas_size": [ 512, 512 ],
+    "canvas_size": 512,
     "canvas_color": [ 0.4, 0.4, 0.4, 1.0 ]
   },
   
