@@ -46,7 +46,7 @@ class Operators:
             spacing = max(input_state.brush.size / 60.0, 1.0)
 
             radius = input_state.brush.size * 0.5
-            pressure = input_state.stylus["pressure"]
+            pressure = input_state.stylus["pressure"] if input_state.found_stylus else 1.0
             p_pressure = input_state.stylus_history[-1]["pressure"] if input_state.stylus_history else pressure
             opacity_start = input_state.brush.opacity / radius
             

@@ -122,6 +122,7 @@ class Texture:
     def __init__(self, width, height, gen_mipmaps):
         tex_id = GL.glGenTextures( 1 )
         GL.glBindTexture( GL.GL_TEXTURE_2D, tex_id )
+        print(width, height)
         GL.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_RGBA16, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, None )
 
         GL.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE )
